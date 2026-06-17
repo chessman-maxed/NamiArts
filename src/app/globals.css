@@ -1,0 +1,209 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-outfit);
+  --animate-marquee-ltr: marquee-ltr 35s linear infinite;
+}
+
+@keyframes marquee-ltr {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(0%);
+  }
+}
+
+:root {
+  --background: #0a0a0a;
+  --foreground: #f5f5f5;
+  --accent: #d4af37; /* Luxury Gold */
+  --accent-hover: #b8901c;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f0f0f;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #262626;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+/* Selection */
+::selection {
+  background-color: rgba(212, 175, 55, 0.2);
+  color: #ffffff;
+}
+
+/* Copy Protection Utilities */
+.protected-image {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Luxury Watermark Overlay */
+.watermark-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: linear-gradient(
+    45deg,
+    transparent 45%,
+    rgba(255, 255, 255, 0.02) 45%,
+    rgba(255, 255, 255, 0.02) 55%,
+    transparent 55%
+  );
+  background-size: 80px 80px;
+  z-index: 10;
+}
+
+.watermark-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-30deg);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.5rem;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.05);
+  text-transform: uppercase;
+  pointer-events: none;
+  white-space: nowrap;
+  user-select: none;
+  z-index: 10;
+}
+
+/* Ambient Radial Glow */
+.ambient-glow {
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(214, 175, 55, 0.05) 0%,
+    transparent 60%
+  );
+  pointer-events: none;
+}
+
+/* Text Shimmer Effect */
+.shimmer-text {
+  background: linear-gradient(
+    to right,
+    #ffffff 20%,
+    var(--accent) 40%,
+    var(--accent) 60%,
+    #ffffff 80%
+  );
+  background-size: 200% auto;
+  color: transparent;
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: shine 6s linear infinite;
+}
+
+@keyframes shine {
+  to {
+    background-position: 200% center;
+  }
+}
+
+/* Premium Loader Animations */
+@keyframes letter-reveal {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.9);
+    filter: blur(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes line-reveal {
+  0% {
+    width: 0%;
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    width: 100%;
+    opacity: 1;
+  }
+}
+
+@keyframes pulse-gold {
+  0%, 100% {
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0);
+  }
+  50% {
+    text-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
+  }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes float-subtle {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-letter {
+  opacity: 0;
+  animation: letter-reveal 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-line-sweep {
+  width: 0;
+  animation: line-reveal 1.8s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+}
+
+.animate-float-logo {
+  animation: float-subtle 4s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 10s linear infinite;
+}
+
+/* Hide scrollbar utility for fullscreen comic reader */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
