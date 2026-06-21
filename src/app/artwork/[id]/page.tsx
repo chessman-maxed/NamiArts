@@ -168,7 +168,7 @@ export default function ArtworkDetails() {
                   role="img"
                   aria-label={artwork.title}
                   style={{ backgroundImage: `url(${getPreviewImageUrl(artwork.imageUrl)})` }}
-                  className="h-full w-full bg-contain bg-center bg-no-repeat pointer-events-none select-none z-10"
+                  className="h-full w-full bg-contain bg-center bg-no-repeat pointer-events-none select-none"
                 />
               </div>
               <p className="text-[10px] text-neutral-600 mt-3 text-center flex items-center justify-center gap-1.5 font-sans">
