@@ -153,14 +153,22 @@ export default function ArtworkDetails() {
                 <div className="watermark-overlay" />
                 <div className="watermark-text">NamiArts</div>
 
+                {/* Hidden image element to trigger onLoad and compute/detect the aspect ratio */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={getPreviewImageUrl(artwork.imageUrl)}
-                  alt={artwork.title}
+                  alt=""
                   onLoad={handleImageLoad}
-                  className="h-full w-full object-contain pointer-events-none select-none z-10"
-                  onDragStart={(e) => e.preventDefault()}
-                  onContextMenu={(e) => e.preventDefault()}
+                  className="absolute w-1 h-1 opacity-0 pointer-events-none"
+                  aria-hidden="true"
+                />
+
+                {/* The secure visible image container using background-image */}
+                <div
+                  role="img"
+                  aria-label={artwork.title}
+                  style={{ backgroundImage: `url(${getPreviewImageUrl(artwork.imageUrl)})` }}
+                  className="h-full w-full bg-contain bg-center bg-no-repeat pointer-events-none select-none z-10"
                 />
               </div>
               <p className="text-[10px] text-neutral-600 mt-3 text-center flex items-center justify-center gap-1.5 font-sans">

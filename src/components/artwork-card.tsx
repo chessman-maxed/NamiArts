@@ -33,14 +33,12 @@ export const ArtworkCard: React.FC<ArtworkCardProps> = ({ id, title, price, imag
         <div className="watermark-overlay" />
         <div className="watermark-text">NamiArts</div>
 
-        {/* The Image itself */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={getPreviewImageUrl(imageUrl)}
-          alt={title}
-          className="h-full w-full object-cover object-top transition-transform duration-750 ease-out group-hover:scale-105 pointer-events-none select-none"
-          onDragStart={(e) => e.preventDefault()}
-          onContextMenu={(e) => e.preventDefault()}
+        {/* The Image itself (using background-image to prevent long-press context menus on mobile) */}
+        <div
+          role="img"
+          aria-label={title}
+          style={{ backgroundImage: `url(${getPreviewImageUrl(imageUrl)})` }}
+          className="h-full w-full bg-cover bg-top transition-transform duration-750 ease-out group-hover:scale-105 pointer-events-none select-none"
         />
         
         {/* Dark subtle shadow vignette */}

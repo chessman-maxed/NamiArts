@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter, Outfit } from "next/font/google";
 import { AuthProvider } from "@/context/auth-context";
 import LoadingScreen from "@/components/loading-screen";
+import ScreenshotProtection from "@/components/screenshot-protection";
+import AnalyticsTracker from "@/components/analytics-tracker";
 import "./globals.css";
 
 const inter = Inter({
@@ -41,6 +43,8 @@ export default function RootLayout({
       <body className="bg-neutral-950 text-neutral-100 font-sans min-h-screen flex flex-col antialiased">
         <AuthProvider>
           <LoadingScreen />
+          <ScreenshotProtection />
+          <AnalyticsTracker />
           {children}
         </AuthProvider>
       </body>

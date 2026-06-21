@@ -49,11 +49,21 @@ const StoryImage = ({ url, alt }: { url: string; alt: string }) => {
           <Loader2 className="w-10 h-10 text-[#d4af37] animate-spin" />
         </div>
       )}
+      {/* Hidden image element to trigger loading detection */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={url}
-        alt={alt}
+        alt=""
         onLoad={() => setLoaded(true)}
-        className={`max-w-full max-h-screen object-contain pointer-events-none select-none transition-opacity duration-300 ${
+        className="absolute w-1 h-1 opacity-0 pointer-events-none"
+        aria-hidden="true"
+      />
+      {/* Secure visible image container using background-image */}
+      <div
+        role="img"
+        aria-label={alt}
+        style={{ backgroundImage: `url(${url})` }}
+        className={`w-full h-full bg-contain bg-center bg-no-repeat pointer-events-none select-none transition-opacity duration-300 ${
           loaded ? "opacity-100" : "opacity-0"
         }`}
       />
@@ -293,10 +303,12 @@ export default function StoriesPage() {
               <div className="grid md:grid-cols-12 gap-0">
                 <div className="md:col-span-5 relative aspect-[16/10] md:aspect-[3/4] w-full overflow-hidden bg-neutral-955">
                   <div className="absolute inset-0 z-10 bg-gradient-to-t md:bg-gradient-to-r from-neutral-950/80 via-transparent to-transparent" />
-                  <img
-                    src={featuredStory.imageUrl}
-                    alt={featuredStory.title}
-                    className="absolute inset-0 h-full w-full object-cover object-[center_38%] transition-transform duration-1000 group-hover:scale-105"
+                  {/* Secure visible image container using background-image */}
+                  <div
+                    role="img"
+                    aria-label={featuredStory.title}
+                    style={{ backgroundImage: `url(${featuredStory.imageUrl})` }}
+                    className="absolute inset-0 h-full w-full bg-cover bg-[center_38%] transition-transform duration-1000 group-hover:scale-105 pointer-events-none select-none"
                   />
                   <span className="absolute top-4 left-4 z-20 px-3 py-1 rounded-full bg-[#d4af37] text-black text-[10px] font-extrabold uppercase tracking-widest shadow-lg">
                     Most Recent
@@ -373,10 +385,12 @@ export default function StoriesPage() {
                 >
                   {/* Story Card Image */}
                   <div className="relative aspect-[16/10] w-full rounded-xl overflow-hidden mb-5 bg-neutral-955">
-                    <img
-                      src={story.imageUrl}
-                      alt={story.title}
-                      className={`h-full w-full object-cover object-top transition-transform duration-700 group-hover:scale-105 ${
+                    {/* Secure visible image container using background-image */}
+                    <div
+                      role="img"
+                      aria-label={story.title}
+                      style={{ backgroundImage: `url(${story.imageUrl})` }}
+                      className={`h-full w-full bg-cover bg-top transition-transform duration-700 group-hover:scale-105 pointer-events-none select-none ${
                         story.id === "neon-horizon" ? "hue-rotate-60 saturate-150 contrast-125" : ""
                       }`}
                     />

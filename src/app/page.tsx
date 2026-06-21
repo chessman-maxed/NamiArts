@@ -125,13 +125,12 @@ export default function Home() {
             
             <div className="absolute inset-0 ambient-glow z-10 pointer-events-none" />
             
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/about_art.jpg"
-              alt="NamiArts Studio"
-              className="h-full w-full object-cover object-bottom transition-transform duration-750 ease-out group-hover:scale-105 pointer-events-none select-none z-0"
-              onDragStart={(e) => e.preventDefault()}
-              onContextMenu={(e) => e.preventDefault()}
+            {/* Secure visible image container using background-image */}
+            <div
+              role="img"
+              aria-label="NamiArts Studio"
+              style={{ backgroundImage: "url('/about_art.jpg')" }}
+              className="h-full w-full bg-cover bg-bottom transition-transform duration-750 ease-out group-hover:scale-105 pointer-events-none select-none z-0"
             />
             {/* Subtle glow border */}
             <div className="absolute inset-0 border border-amber-500/10 group-hover:border-amber-500/20 transition-colors duration-500 rounded-2xl z-30" />
