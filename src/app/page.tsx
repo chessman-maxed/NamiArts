@@ -6,7 +6,7 @@ import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import Navbar from "@/components/navbar";
 import ArtworkCard from "@/components/artwork-card";
-import { Mail, MessageSquare, Palette, ShieldAlert, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
+import { Mail, MessageSquare, Palette, ShieldAlert, Sparkles, ChevronDown, ChevronUp, Search, X } from "lucide-react";
 
 interface Artwork {
   id: string;
@@ -23,6 +23,27 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [showAllArtworks, setShowAllArtworks] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const [searchInput, setSearchInput] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setSearchQuery(searchInput);
+    }, 200);
+    return () => clearTimeout(handler);
+  }, [searchInput]);
+
+  const filteredArtworks = artworks.filter((art) => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return true;
+    return art.title.toLowerCase().includes(q);
+  });
+
+  const displayArtworks = searchQuery
+    ? filteredArtworks
+    : showAllArtworks
+    ? filteredArtworks
+    : filteredArtworks.slice(0, 6);
 
   useEffect(() => {
     const q = query(collection(db, "artworks"), orderBy("createdAt", "desc"));
@@ -165,6 +186,31 @@ export default function Home() {
             </p>
           </div>
 
+          {!loading && artworks.length > 0 && (
+            <div className="max-w-md mx-auto mb-12 relative z-20">
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500">
+                  <Search className="w-5 h-5" />
+                </span>
+                <input
+                  type="text"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  placeholder="Search artwork title or post number..."
+                  className="w-full bg-neutral-900/60 border border-neutral-800 hover:border-neutral-750 focus:border-[#d4af37] rounded-full pl-12 pr-10 py-3.5 text-sm text-white placeholder-neutral-500 focus:outline-none transition-all duration-300 shadow-inner"
+                />
+                {searchInput && (
+                  <button
+                    onClick={() => setSearchInput("")}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-white transition-colors cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
               <div className="w-10 h-10 border-4 border-neutral-800 border-t-[#d4af37] rounded-full animate-spin" />
@@ -178,10 +224,24 @@ export default function Home() {
                 No artworks are currently listed. Please check back later as the gallery updates dynamically!
               </p>
             </div>
+          ) : filteredArtworks.length === 0 ? (
+            <div className="text-center py-16 bg-neutral-900/10 border border-neutral-800/80 rounded-2xl max-w-md mx-auto px-6 z-10 relative">
+              <ShieldAlert className="w-10 h-10 text-neutral-600 mx-auto mb-4" />
+              <h3 className="font-display text-lg font-bold text-white mb-2">No Matches Found</h3>
+              <p className="text-neutral-400 text-sm mb-6">
+                We couldn't find any artworks matching "{searchQuery}".
+              </p>
+              <button
+                onClick={() => setSearchQuery("")}
+                className="px-5 py-2.5 rounded-full bg-neutral-800 hover:bg-[#d4af37] text-white hover:text-black font-semibold text-xs tracking-wider uppercase transition-colors cursor-pointer"
+              >
+                Clear Search
+              </button>
+            </div>
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {(showAllArtworks ? artworks : artworks.slice(0, 6)).map((art) => (
+                {displayArtworks.map((art) => (
                   <ArtworkCard
                     key={art.id}
                     id={art.id}
@@ -192,7 +252,7 @@ export default function Home() {
                 ))}
               </div>
 
-              {artworks.length > 6 && (
+              {!searchQuery && artworks.length > 6 && (
                 <div className="flex justify-center mt-12">
                   <button
                     onClick={() => setShowAllArtworks(!showAllArtworks)}

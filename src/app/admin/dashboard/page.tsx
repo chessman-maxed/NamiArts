@@ -30,7 +30,9 @@ import {
   IndianRupee,
   BookOpen,
   BarChart3,
-  Users
+  Users,
+  Search,
+  ShieldAlert
 } from "lucide-react";
 
 interface Artwork {
@@ -131,6 +133,29 @@ export default function AdminDashboard() {
   const [fetchingArtworks, setFetchingArtworks] = useState(true);
   const [stories, setStories] = useState<Story[]>([]);
   const [fetchingStories, setFetchingStories] = useState(true);
+
+  // Search States
+  const [adminSearchInput, setAdminSearchInput] = useState("");
+  const [adminSearchQuery, setAdminSearchQuery] = useState("");
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setAdminSearchQuery(adminSearchInput);
+    }, 200);
+    return () => clearTimeout(handler);
+  }, [adminSearchInput]);
+
+  const filteredArtworks = artworks.filter((art) => {
+    const q = adminSearchQuery.toLowerCase().trim();
+    if (!q) return true;
+    return art.title.toLowerCase().includes(q);
+  });
+
+  const filteredStories = stories.filter((story) => {
+    const q = adminSearchQuery.toLowerCase().trim();
+    if (!q) return true;
+    return story.title.toLowerCase().includes(q);
+  });
 
   // Upload Artwork States
   const [title, setTitle] = useState("");
@@ -969,6 +994,30 @@ export default function AdminDashboard() {
                   </button>
                 </div>
 
+                {/* Search Bar */}
+                <div className="mb-6 relative z-10">
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">
+                      <Search className="w-4 h-4" />
+                    </span>
+                    <input
+                      type="text"
+                      value={adminSearchInput}
+                      onChange={(e) => setAdminSearchInput(e.target.value)}
+                      placeholder={activeTab === "artworks" ? "Search artwork title..." : "Search story title..."}
+                      className="w-full bg-neutral-900 border border-neutral-800 focus:border-[#d4af37] rounded-lg pl-9 pr-8 py-2 text-xs text-white placeholder-neutral-500 focus:outline-none transition-colors"
+                    />
+                    {adminSearchInput && (
+                      <button
+                        onClick={() => setAdminSearchInput("")}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-white transition-colors cursor-pointer"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
                 {/* TAB 1: Artworks Management */}
                 {activeTab === "artworks" && (
                   <div>
@@ -985,6 +1034,20 @@ export default function AdminDashboard() {
                           Upload your first gallery artwork using the panel on the left.
                         </p>
                       </div>
+                    ) : filteredArtworks.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-20 text-center">
+                        <ShieldAlert className="w-8 h-8 text-neutral-600 mb-3" />
+                        <h3 className="text-sm font-bold text-white mb-1">No Matches Found</h3>
+                        <p className="text-neutral-500 text-xs max-w-xs mb-4">
+                          No artworks match your search query "{adminSearchQuery}".
+                        </p>
+                        <button
+                          onClick={() => setAdminSearchInput("")}
+                          className="px-4 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white font-semibold text-xs border border-neutral-800 hover:border-neutral-700 transition-colors cursor-pointer"
+                        >
+                          Clear Search
+                        </button>
+                      </div>
                     ) : (
                       <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm text-neutral-300 border-collapse">
@@ -997,7 +1060,7 @@ export default function AdminDashboard() {
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-neutral-900/50">
-                            {artworks.map((art) => (
+                            {filteredArtworks.map((art) => (
                               <tr key={art.id} className="hover:bg-neutral-900/10 transition-colors">
                                 <td className="py-4 pl-2">
                                   <div className="relative w-12 h-12 rounded-lg bg-neutral-900 border border-neutral-800 overflow-hidden select-none protected-image">
@@ -1059,6 +1122,20 @@ export default function AdminDashboard() {
                           Upload your first creative story using the panel on the left.
                         </p>
                       </div>
+                    ) : filteredStories.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-20 text-center">
+                        <ShieldAlert className="w-8 h-8 text-neutral-600 mb-3" />
+                        <h3 className="text-sm font-bold text-white mb-1">No Matches Found</h3>
+                        <p className="text-neutral-500 text-xs max-w-xs mb-4">
+                          No stories match your search query "{adminSearchQuery}".
+                        </p>
+                        <button
+                          onClick={() => setAdminSearchInput("")}
+                          className="px-4 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white font-semibold text-xs border border-neutral-800 hover:border-neutral-700 transition-colors cursor-pointer"
+                        >
+                          Clear Search
+                        </button>
+                      </div>
                     ) : (
                       <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm text-neutral-300 border-collapse">
@@ -1070,7 +1147,7 @@ export default function AdminDashboard() {
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-neutral-900/50">
-                            {stories.map((story) => (
+                            {filteredStories.map((story) => (
                               <tr key={story.id} className="hover:bg-neutral-900/10 transition-colors">
                                 <td className="py-4 pl-2">
                                   <div className="relative w-12 h-12 rounded-lg bg-neutral-900 border border-neutral-800 overflow-hidden select-none protected-image">
