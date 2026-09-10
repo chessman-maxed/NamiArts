@@ -17,13 +17,21 @@ export default function AdminLogin() {
     setSigningIn(true);
     try {
       await loginWithGoogle();
-      router.push("/admin/dashboard");
+      // On success, redirect will be handled or checked
     } catch (error) {
       console.error(error);
       setErrorMsg("Failed to sign in. Please try again.");
+    } finally {
       setSigningIn(false);
     }
   };
+
+  // When user signs in and is admin, automatically route to dashboard
+  useEffect(() => {
+    if (!loading && user && isAdmin) {
+      router.push("/admin/dashboard");
+    }
+  }, [user, loading, isAdmin, router]);
 
   const handleSignOut = async () => {
     try {
@@ -91,8 +99,8 @@ export default function AdminLogin() {
           </div>
         )}
 
-        {/* Login Action */}
-        {!user ? (
+        {/* Always display Sign in with Google button when not blocked by unauthorized view */}
+        {(!user || isAdmin) && (
           <button
             onClick={handleSignIn}
             disabled={signingIn}
@@ -107,22 +115,6 @@ export default function AdminLogin() {
               </>
             )}
           </button>
-        ) : !isAdmin ? null : (
-          <div className="space-y-4">
-            <button
-              onClick={() => router.push("/admin/dashboard")}
-              className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl bg-[#d4af37] hover:bg-[#c59e26] text-neutral-950 font-bold transition-all duration-300 focus:outline-none cursor-pointer shadow-lg shadow-[#d4af37]/20"
-            >
-              <LogIn className="w-5 h-5" />
-              Proceed to Admin Dashboard
-            </button>
-            <button
-              onClick={handleSignOut}
-              className="w-full text-center text-xs text-neutral-400 hover:text-white transition-colors py-1"
-            >
-              Sign Out ({user.email})
-            </button>
-          </div>
         )}
 
         <div className="mt-8 text-center">
