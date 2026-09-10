@@ -99,8 +99,8 @@ export default function AdminLogin() {
           </div>
         )}
 
-        {/* Always display Sign in with Google button when not blocked by unauthorized view */}
-        {(!user || isAdmin) && (
+        {/* Always display Sign in with Google button when user is not logged in */}
+        {!user && (
           <button
             onClick={handleSignIn}
             disabled={signingIn}
