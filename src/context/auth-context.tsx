@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { User, signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
+import { User, signInWithPopup, signOut, onAuthStateChanged, setPersistence, browserSessionPersistence } from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebase";
 
 interface AuthContextType {
@@ -20,6 +20,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
+    setPersistence(auth, browserSessionPersistence).catch((err) => {
+      console.error("Failed to set session persistence:", err);
+    });
+
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       
