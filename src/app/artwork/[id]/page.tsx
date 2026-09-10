@@ -6,8 +6,10 @@ import { useParams, useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import Navbar from "@/components/navbar";
-import { Mail, MessageSquare, ArrowLeft, Loader2, Shield, Sparkles } from "lucide-react";
+import { Mail, MessageSquare, ArrowLeft, Loader2, Shield, Sparkles, ShoppingBag } from "lucide-react";
 import { getPreviewImageUrl } from "@/lib/image";
+import { useCart } from "@/context/cart-context";
+
 
 interface Artwork {
   id: string;
@@ -15,14 +17,17 @@ interface Artwork {
   price: string | number;
   imageUrl: string;
   aspectRatio?: number;
+  orientation?: "portrait" | "landscape";
 }
 
 export default function ArtworkDetails() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
+  const { openFrameSelection } = useCart();
 
   const [artwork, setArtwork] = useState<Artwork | null>(null);
+
   const [loading, setLoading] = useState(true);
   const [detectedAspect, setDetectedAspect] = useState<number | undefined>(undefined);
   const [agreed, setAgreed] = useState(false);
@@ -36,7 +41,10 @@ export default function ArtworkDetails() {
     }
   };
 
-  const aspect = artwork?.aspectRatio || detectedAspect;
+  const defaultAspect = artwork?.orientation === "landscape" ? 16 / 9 : 3 / 4;
+  const aspect = artwork?.aspectRatio || detectedAspect || defaultAspect;
+
+
 
   useEffect(() => {
     if (!id) return;
@@ -112,12 +120,12 @@ export default function ArtworkDetails() {
     ? `INR ${Number(artwork.price).toLocaleString()}`
     : String(artwork.price).replace("₹", "INR ");
 
-  const emailSubject = encodeURIComponent(`Inquiry about Artwork: ${artwork.title}`);
+  const emailSubject = encodeURIComponent(`Inquiry about Photo Frame for Artwork: ${artwork.title}`);
   const emailBody = encodeURIComponent(
-    `Hello,\n\nI am interested in purchasing your artwork titled "${artwork.title}" for ${emailPriceText}.\n\nPlease let me know how to proceed.\n\nThank you.`
+    `Hello,\n\nI am interested in ordering a physical photo frame of your artwork titled "${artwork.title}" (${emailPriceText}).\n\nPlease share available frame options, finishes, and ordering steps.\n\nThank you.`
   );
   
-  const whatsappMessage = encodeURIComponent(`Hello, I am interested in purchasing ${artwork.title}.`);
+  const whatsappMessage = encodeURIComponent(`Hello, I am interested in ordering a physical photo frame of artwork: ${artwork.title}.`);
 
   return (
     <>
@@ -168,12 +176,13 @@ export default function ArtworkDetails() {
                   role="img"
                   aria-label={artwork.title}
                   style={{ backgroundImage: `url(${getPreviewImageUrl(artwork.imageUrl)})` }}
-                  className="h-full w-full bg-contain bg-center bg-no-repeat pointer-events-none select-none"
+                  className="h-full w-full bg-cover bg-center bg-no-repeat pointer-events-none select-none"
                 />
+
               </div>
               <p className="text-[10px] text-neutral-600 mt-3 text-center flex items-center justify-center gap-1.5 font-sans">
                 <Shield className="w-3.5 h-3.5" />
-                Protected Preview. Copying is discouraged.
+                Protected Preview. Artwork will be crafted into your chosen photo frame.
               </p>
             </div>
 
@@ -189,30 +198,28 @@ export default function ArtworkDetails() {
               
               <div className="h-px bg-neutral-900 mb-6" />
 
-
-
               {/* Purchase Inquiry Container */}
               <div className="bg-neutral-900/40 border border-neutral-800 rounded-2xl p-6 backdrop-blur-sm">
-                <h3 className="font-display text-lg font-bold text-white mb-2">Purchase Inquiries</h3>
+                <h3 className="font-display text-lg font-bold text-white mb-2">Order Custom Photo Frame</h3>
                 <p className="text-neutral-400 text-sm mb-4 leading-relaxed">
-                  Interested in purchasing this artwork? Click below to send a direct inquiry via WhatsApp or Email. We will arrange secure payment and original digital file delivery.
+                  Love this artwork? Get it crafted into a physical photo frame. Click below to inquire via WhatsApp or Email to select your frame type, colour finish, and delivery location.
                 </p>
 
                 {/* Customization Callout */}
                 <div className="mb-4 p-4 bg-amber-500/5 border border-[#d4af37]/20 rounded-xl text-left">
                   <div className="flex items-center gap-2 text-[#d4af37] font-semibold text-xs uppercase tracking-wider mb-1.5">
                     <Sparkles className="w-3.5 h-3.5" />
-                    Artwork Customization
+                    Frame Options & Customization
                   </div>
                   <p className="text-xs text-neutral-300 leading-relaxed font-sans">
-                    Any artwork displayed here can be personalized and tailored to suit your needs (such as edits to color palettes, dimensions, or details) before final file delivery. Note: Custom editing requests will incur a slightly higher charge than the standard price listed.
+                    Choose from classic black, warm walnut wood, polished gold, or minimal white frame finishes. Custom sizes and artwork color adjustments can also be requested.
                   </p>
                 </div>
 
                 {/* Copyright Disclaimer */}
                 <div className="mb-6 p-4 bg-neutral-950/50 border border-neutral-850 rounded-xl text-left text-xs text-neutral-400 font-sans leading-relaxed">
                   <strong className="text-neutral-200 block mb-1">Copyright License Disclaimer:</strong>
-                  <strong>Purchasing this artwork does NOT transfer its copyright to the buyer. NamiArts retains full ownership, intellectual property rights, and copyright of the artwork, and reserves the right to sell, reproduce, or distribute the same image to other clients.</strong>
+                  <strong>Purchasing a photo frame from NamiArts grants physical ownership of the framed product. Original artwork copyrights and distribution rights remain exclusively with NamiArts.</strong>
                 </div>
 
                 {/* Terms Agreement Checkbox */}
@@ -232,48 +239,33 @@ export default function ArtworkDetails() {
                   </label>
                 </div>
 
-                <div className="flex flex-col gap-4">
-                  {/* WhatsApp button */}
+                <div className="flex flex-col gap-3">
+                  {/* Select Frame Button */}
                   {agreed ? (
-                    <a
-                      href={`https://wa.me/${whatsappNumber}?text=${whatsappMessage}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full flex items-center justify-center gap-3 py-3.5 px-6 rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-white font-bold transition-all duration-300 shadow-[0_4px_15px_rgba(37,211,102,0.1)] text-center text-sm"
-                    >
-                      <MessageSquare className="w-5 h-5" />
-                      Inquire via WhatsApp
-                    </a>
-                  ) : (
                     <button
-                      disabled
-                      className="w-full flex items-center justify-center gap-3 py-3.5 px-6 rounded-xl bg-[#25D366]/20 text-white/30 font-bold text-center text-sm cursor-not-allowed border border-neutral-800/50"
-                      title="Please agree to the terms and conditions first"
+                      onClick={() =>
+                        openFrameSelection({
+                          id: artwork.id,
+                          title: artwork.title,
+                          price: artwork.price,
+                          imageUrl: artwork.imageUrl,
+                          orientation: artwork.orientation,
+                          aspectRatio: aspect,
+                        })
+                      }
+                      className="w-full flex items-center justify-center gap-3 py-3.5 px-6 rounded-xl bg-[#d4af37] hover:bg-[#b5942d] text-black font-extrabold transition-all duration-300 shadow-[0_4px_20px_rgba(212,175,55,0.25)] text-center text-sm cursor-pointer"
                     >
-                      <MessageSquare className="w-5 h-5 text-white/20" />
-                      Inquire via WhatsApp
+                      <ShoppingBag className="w-5 h-5" />
+                      Select Frame
                     </button>
-                  )}
-
-                  {/* Email button */}
-                  {agreed ? (
-                    <a
-                      href={`https://mail.google.com/mail/?view=cm&fs=1&to=${contactEmail}&su=${emailSubject}&body=${emailBody}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full flex items-center justify-center gap-3 py-3.5 px-6 rounded-xl bg-neutral-800 hover:bg-neutral-750 text-white font-bold border border-neutral-700 transition-colors text-sm"
-                    >
-                      <Mail className="w-5 h-5 text-[#d4af37]" />
-                      Inquire via Email
-                    </a>
                   ) : (
                     <button
                       disabled
-                      className="w-full flex items-center justify-center gap-3 py-3.5 px-6 rounded-xl bg-neutral-800/20 text-neutral-500 font-bold border border-neutral-850/50 text-sm cursor-not-allowed"
-                      title="Please agree to the terms and conditions first"
+                      className="w-full flex items-center justify-center gap-3 py-3.5 px-6 rounded-xl bg-[#d4af37]/20 text-[#d4af37]/40 font-extrabold text-center text-sm cursor-not-allowed border border-neutral-800/50"
+                      title="Please agree to the Terms & Conditions first"
                     >
-                      <Mail className="w-5 h-5 text-neutral-600" />
-                      Inquire via Email
+                      <ShoppingBag className="w-5 h-5 text-[#d4af37]/30" />
+                      Select Frame
                     </button>
                   )}
                 </div>

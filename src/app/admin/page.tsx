@@ -12,18 +12,12 @@ export default function AdminLogin() {
   const [errorMsg, setErrorMsg] = useState("");
   const [signingIn, setSigningIn] = useState(false);
 
-  // Automatically redirect if already admin
-  useEffect(() => {
-    if (!loading && user && isAdmin) {
-      router.push("/admin/dashboard");
-    }
-  }, [user, loading, isAdmin, router]);
-
   const handleSignIn = async () => {
     setErrorMsg("");
     setSigningIn(true);
     try {
       await loginWithGoogle();
+      router.push("/admin/dashboard");
     } catch (error) {
       console.error(error);
       setErrorMsg("Failed to sign in. Please try again.");
@@ -40,7 +34,7 @@ export default function AdminLogin() {
     }
   };
 
-  if (loading || (user && isAdmin)) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-neutral-950 flex flex-col items-center justify-center">
         <div className="flex flex-col items-center gap-4">
@@ -69,22 +63,24 @@ export default function AdminLogin() {
           Access is restricted to authorized gallery administrators only.
         </p>
 
-        {/* Unauthorized user feedback */}
+        {/* Unauthorized user feedback - Animated Big Red Cross */}
         {user && !isAdmin && (
-          <div className="mb-8 p-4 bg-red-950/20 border border-red-900/50 rounded-xl flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
-            <div>
-              <h4 className="text-sm font-bold text-white mb-1">Access Denied</h4>
-              <p className="text-xs text-neutral-450 mb-3 leading-relaxed">
-                The account <strong>{user.email}</strong> is not whitelisted for administrator permissions.
-              </p>
-              <button
-                onClick={handleSignOut}
-                className="text-xs font-semibold text-[#d4af37] hover:text-white transition-colors underline focus:outline-none"
-              >
-                Sign out & use another account
-              </button>
+          <div className="mb-8 p-6 bg-red-950/30 border border-red-900/60 rounded-2xl flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-300">
+            <div className="w-16 h-16 rounded-full bg-red-500/10 border-2 border-red-500/80 flex items-center justify-center mb-3 animate-bounce">
+              <span className="text-3xl text-red-500 font-extrabold select-none">✕</span>
             </div>
+            <h3 className="text-xl font-bold text-red-500 mb-1 font-display tracking-wide">
+              Access Denied
+            </h3>
+            <p className="text-xs text-neutral-400 mb-5 max-w-xs leading-relaxed">
+              Only authorized administrator accounts are granted access.
+            </p>
+            <button
+              onClick={handleSignOut}
+              className="py-2.5 px-5 rounded-xl bg-red-900/40 hover:bg-red-900/70 border border-red-700/50 text-red-200 text-xs font-semibold transition-all duration-200 focus:outline-none cursor-pointer"
+            >
+              Sign Out & Switch Account
+            </button>
           </div>
         )}
 
@@ -112,8 +108,20 @@ export default function AdminLogin() {
             )}
           </button>
         ) : !isAdmin ? null : (
-          <div className="text-center text-sm text-[#d4af37]">
-            Authorized. Redirecting to dashboard...
+          <div className="space-y-4">
+            <button
+              onClick={() => router.push("/admin/dashboard")}
+              className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl bg-[#d4af37] hover:bg-[#c59e26] text-neutral-950 font-bold transition-all duration-300 focus:outline-none cursor-pointer shadow-lg shadow-[#d4af37]/20"
+            >
+              <LogIn className="w-5 h-5" />
+              Proceed to Admin Dashboard
+            </button>
+            <button
+              onClick={handleSignOut}
+              className="w-full text-center text-xs text-neutral-400 hover:text-white transition-colors py-1"
+            >
+              Sign Out ({user.email})
+            </button>
           </div>
         )}
 

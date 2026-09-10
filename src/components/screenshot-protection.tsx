@@ -71,16 +71,6 @@ export default function ScreenshotProtection() {
       }
     };
 
-    // 2. Hide content on blur (loss of focus)
-    const handleBlur = () => {
-      setIsProtected(true);
-    };
-
-    const handleFocus = () => {
-      setIsProtected(false);
-    };
-
-    // 3. Hide content on visibility change (tabs switcher, app switcher on mobile)
     const handleVisibilityChange = () => {
       if (document.visibilityState === "hidden") {
         setIsProtected(true);
@@ -93,8 +83,6 @@ export default function ScreenshotProtection() {
     window.addEventListener("keyup", handleKeyUp);
     window.addEventListener("copy", handleCopy);
     window.addEventListener("cut", handleCopy);
-    window.addEventListener("blur", handleBlur);
-    window.addEventListener("focus", handleFocus);
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
@@ -102,8 +90,6 @@ export default function ScreenshotProtection() {
       window.removeEventListener("keyup", handleKeyUp);
       window.removeEventListener("copy", handleCopy);
       window.removeEventListener("cut", handleCopy);
-      window.removeEventListener("blur", handleBlur);
-      window.removeEventListener("focus", handleFocus);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);

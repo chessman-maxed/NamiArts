@@ -34,7 +34,7 @@ export default function LegalPage() {
               Terms of Service & Licensing
             </h1>
             <p className="text-neutral-400 text-sm font-sans">
-              Please read our legal terms and conditions carefully before inquiring about or acquiring digital artworks from NamiArts.
+              Please read our legal terms and conditions carefully before inquiring about or ordering photo frames from NamiArts.
             </p>
           </div>
 
@@ -49,32 +49,32 @@ export default function LegalPage() {
               </h2>
               <div className="text-neutral-300 space-y-4 text-sm leading-relaxed font-sans">
                 <p>
-                  <strong>NamiArts retains complete copyright and ownership</strong> over all digital illustrations, character designs, and concept art displayed or sold on this platform.
+                  <strong>NamiArts retains complete copyright and ownership</strong> over all visual artwork designs, character illustrations, and concept art showcased on this platform.
                 </p>
                 <p>
-                  Purchasing an artwork grants the buyer a <strong>non-exclusive, non-commercial, personal-use license</strong> only. The purchase does NOT transfer the copyright, distribution, or reproduction rights to the client.
+                  Purchasing a physical photo frame grants the client physical ownership of the framed product. The purchase does NOT transfer any copyright, commercial reproduction, or distribution rights to the client.
                 </p>
                 <p className="font-bold text-neutral-200">
-                  NamiArts reserves the absolute right to continue showcasing, reselling, reproducing, or distributing the same artwork to other clients or platforms at any time.
+                  NamiArts reserves the absolute right to continue showcasing, reproducing, or selling framed physical artwork designs to other clients at any time.
                 </p>
               </div>
             </div>
 
-            {/* Section 2: Distribution & Illegal Sharing */}
+            {/* Section 2: Distribution & Reproduction */}
             <div className="bg-neutral-900/30 border border-neutral-850 rounded-2xl p-6 md:p-8 backdrop-blur-sm">
               <h2 className="font-display text-xl font-bold text-white mb-4 flex items-center gap-2.5">
                 <AlertOctagon className="w-5 h-5 text-red-500/80" />
-                2. Prohibition of Sharing & Distribution
+                2. Prohibition of Commercial Reproduction
               </h2>
               <div className="text-neutral-300 space-y-4 text-sm leading-relaxed font-sans">
                 <p>
-                  As a licensed buyer, you are <strong>strictly prohibited from distributing, sharing, reselling, copying, or transferring</strong> the high-resolution digital files to any other person, group, or third-party platform.
+                  Clients are <strong>strictly prohibited from scanning, copying, reproducing, or commercializing</strong> NamiArts artwork designs in any form.
                 </p>
                 <p>
-                  You are not permitted to share the files publicly or make them downloadable on torrents, file-hosting services, or public cloud directories.
+                  Framed artworks are provided exclusively for personal display in homes, offices, studios, or personal spaces.
                 </p>
                 <p className="border-l-2 border-red-500 pl-4 py-1 text-red-400 font-semibold bg-red-950/10 rounded-r-lg">
-                  IMPORTANT: If any client is found sharing or distributing acquired artwork without explicit written permission, NamiArts will immediately initiate strict legal actions and copyright claims to the fullest extent of the law.
+                  IMPORTANT: If any client is found commercially reproducing or distributing NamiArts artwork designs without explicit written authorization, NamiArts will initiate strict legal actions.
                 </p>
               </div>
             </div>
@@ -98,7 +98,7 @@ export default function LegalPage() {
                   <li>Any illegal or copyrighted materials without proper ownership credentials.</li>
                 </ul>
                 <p>
-                  Any commission or customization requests violating these guidelines will be immediately rejected without review.
+                  Any commission or customization requests violating these guidelines will be immediately rejected.
                 </p>
               </div>
             </div>
@@ -107,14 +107,14 @@ export default function LegalPage() {
             <div className="bg-neutral-900/30 border border-neutral-850 rounded-2xl p-6 md:p-8 backdrop-blur-sm">
               <h2 className="font-display text-xl font-bold text-white mb-4 flex items-center gap-2.5">
                 <UserCheck className="w-5 h-5 text-[#d4af37]" />
-                4. Client Usage & Limitation of Liability
+                4. Delivery & Order Policy
               </h2>
               <div className="text-neutral-300 space-y-4 text-sm leading-relaxed font-sans">
                 <p>
-                  <strong>NamiArts is not responsible or liable</strong> for how a client chooses to utilize, print, or apply the acquired digital images once the files are delivered.
+                  <strong>NamiArts ensures high quality framing and packaging</strong> for all physical photo frame orders. Delivery details and tracking are coordinated upon order confirmation.
                 </p>
                 <p>
-                  The client assumes full responsibility and liability for their usage. If the client uses the images in any manner that causes legal disputes, damage, or violations of local regulations, NamiArts is completely absolved of any association or liability.
+                  Clients are encouraged to verify frame specifications, sizes, and color choices prior to final dispatch.
                 </p>
               </div>
             </div>
@@ -123,14 +123,14 @@ export default function LegalPage() {
             <div className="bg-neutral-900/30 border border-neutral-850 rounded-2xl p-6 md:p-8 backdrop-blur-sm">
               <h2 className="font-display text-xl font-bold text-white mb-4 flex items-center gap-2.5">
                 <Scale className="w-5 h-5 text-neutral-450" />
-                5. Fees & Sales Policy
+                5. Customization & Pricing
               </h2>
               <div className="text-neutral-300 space-y-4 text-sm leading-relaxed font-sans">
                 <p>
-                  All digital sales are final. Due to the reproducible nature of digital media files, we do not support returns, cancellations, or refunds once files are shared.
+                  Custom frame sizing, color finishes, and personalized artwork adjustments are available upon request during inquiry.
                 </p>
                 <p>
-                  <strong>Customization:</strong> Standard price lists cover direct deliveries. If you request customization (edits to characters, canvas dimensions, or color scales), additional fees will apply depending on the design time required.
+                  <strong>Customization:</strong> Standard frame prices apply to catalog selections. Custom framing finishes or artwork edits will be quoted based on complexity.
                 </p>
               </div>
             </div>

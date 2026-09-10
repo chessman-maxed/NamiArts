@@ -26,3 +26,4 @@ googleProvider.setCustomParameters({
 });
 
 export { app, auth, db, storage, googleProvider };
+

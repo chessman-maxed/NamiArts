@@ -1,12 +1,17 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import Navbar from "@/components/navbar";
 import ArtworkCard from "@/components/artwork-card";
-import { Mail, MessageSquare, Palette, ShieldAlert, Sparkles, ChevronDown, ChevronUp, Search, X } from "lucide-react";
+import ArtCollectionsSection from "@/components/art-collections-section";
+import { Mail, MessageSquare, Sparkles, BookOpen } from "lucide-react";
+import { AnimatedSection, StaggerContainer, StaggerItem } from "@/components/animated-section";
+import { motion } from "framer-motion";
+import HeroBackground3D from "@/components/hero-background-3d";
+import { gsap, ScrollTrigger } from "@/lib/gsap-setup";
 
 interface Artwork {
   id: string;
@@ -14,36 +19,122 @@ interface Artwork {
   price: string | number;
   imageUrl: string;
   aspectRatio?: number;
+  orientation?: "portrait" | "landscape";
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   createdAt: any;
 }
 
+
 export default function Home() {
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showAllArtworks, setShowAllArtworks] = useState(false);
   const [agreed, setAgreed] = useState(false);
-  const [searchInput, setSearchInput] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
+
+  const heroSectionRef = useRef<HTMLDivElement>(null);
+  const heroImageRef = useRef<HTMLDivElement>(null);
+  const heroContentRef = useRef<HTMLDivElement>(null);
+  const aboutSectionRef = useRef<HTMLDivElement>(null);
+  const aboutImageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handler = setTimeout(() => {
-      setSearchQuery(searchInput);
-    }, 200);
-    return () => clearTimeout(handler);
-  }, [searchInput]);
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion || !aboutSectionRef.current || !aboutImageRef.current) return;
 
-  const filteredArtworks = artworks.filter((art) => {
-    const q = searchQuery.toLowerCase().trim();
-    if (!q) return true;
-    return art.title.toLowerCase().includes(q);
-  });
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        aboutImageRef.current,
+        { scale: 1.15, filter: "brightness(0.7)" },
+        {
+          scale: 1,
+          filter: "brightness(1)",
+          duration: 1.2,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: aboutSectionRef.current,
+            start: "top 80%",
+            toggleActions: "play none none none",
+          },
+        }
+      );
+    }, aboutSectionRef);
 
-  const displayArtworks = searchQuery
-    ? filteredArtworks
-    : showAllArtworks
-    ? filteredArtworks
-    : filteredArtworks.slice(0, 6);
+    return () => ctx.revert();
+  }, []);
+
+  useEffect(() => {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion || !heroSectionRef.current) return;
+
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+
+      if (heroImageRef.current) {
+        tl.fromTo(
+          heroImageRef.current,
+          { opacity: 0, scale: 1.08 },
+          { opacity: 1, scale: 1, duration: 1.3 }
+        );
+      }
+
+      if (heroContentRef.current) {
+        const children = Array.from(heroContentRef.current.children);
+        tl.fromTo(
+          children,
+          { opacity: 0, y: 30 },
+          { opacity: 1, y: 0, duration: 0.85, stagger: 0.12 },
+          "-=0.9"
+        );
+      }
+
+      if (heroImageRef.current && heroSectionRef.current) {
+        gsap.to(heroImageRef.current, {
+          yPercent: 12,
+          ease: "none",
+          scrollTrigger: {
+            trigger: heroSectionRef.current,
+            start: "top top",
+            end: "bottom top",
+            scrub: 0.5,
+          },
+        });
+      }
+
+      if (heroContentRef.current && heroSectionRef.current) {
+        gsap.to(heroContentRef.current, {
+          yPercent: -10,
+          opacity: 0.25,
+          ease: "none",
+          scrollTrigger: {
+            trigger: heroSectionRef.current,
+            start: "top top",
+            end: "bottom top",
+            scrub: 0.5,
+          },
+        });
+      }
+    }, heroSectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if ("scrollRestoration" in window.history) {
+        window.history.scrollRestoration = "manual";
+      }
+      if (window.location.hash) {
+        const id = window.location.hash.replace("#", "");
+        setTimeout(() => {
+          const element = document.getElementById(id);
+          if (element) {
+            element.scrollIntoView({ behavior: "smooth" });
+          }
+        }, 100);
+      } else {
+        window.scrollTo(0, 0);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const q = query(collection(db, "artworks"), orderBy("createdAt", "desc"));
@@ -64,62 +155,150 @@ export default function Home() {
 
   const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "nameearts@gmail.com";
   const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "919699338301";
-  const whatsappMessage = encodeURIComponent("Hello! I am interested in inquiring about and purchasing digital artwork from NamiArts.");
+  const whatsappMessage = encodeURIComponent("Hello! I am interested in inquiring about and ordering a framed photo artwork from NamiArts.");
 
   return (
     <>
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center pt-24 overflow-hidden">
-        {/* Glow ambient background */}
-        <div className="absolute inset-0 ambient-glow z-0" />
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-amber-500/5 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-yellow-500/5 rounded-full blur-[120px] pointer-events-none" />
+      <section ref={heroSectionRef} className="relative w-full min-h-screen flex items-center overflow-hidden bg-[#090604] pt-24 pb-12 lg:py-0 select-none">
+        {/* Three.js Subtle Gold Particle Canvas */}
+        <HeroBackground3D />
 
-        <div className="max-w-4xl mx-auto px-6 text-center z-10 relative">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-neutral-900/80 border border-neutral-850 text-[#d4af37] text-xs font-semibold uppercase tracking-wider mb-6 animate-pulse">
-            <Palette className="w-3.5 h-3.5" />
-            Digital Art Studio & Gallery
-          </div>
-          
-          <h1 className="font-display text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight text-white mb-6">
-            Elevating Imagination <br />
-            Into <span className="shimmer-text">Digital Reality</span>
-          </h1>
-          
-          <p className="text-lg md:text-xl text-neutral-400 max-w-2xl mx-auto mb-10 leading-relaxed font-sans">
-            Welcome to NamiArts. Discover premium digital artworks, character concepts, and immersive illustrations crafted with luxury aesthetic.
-          </p>
+        {/* Full-height Right Portrait Layer (Img 2) positioned absolutely to cover right 50-55% */}
+        <div ref={heroImageRef} className="absolute top-0 right-0 w-full lg:w-[58%] h-full z-0 overflow-hidden pointer-events-none protected-image">
+          {/* Natural Warm Golden Glow & Radial Backlight Layers */}
+          <div className="absolute top-1/4 right-1/4 w-[550px] h-[550px] bg-amber-500/25 rounded-full blur-[130px] pointer-events-none z-0" />
+          <div className="absolute top-1/3 right-1/3 w-[400px] h-[400px] bg-yellow-400/20 rounded-full blur-[100px] pointer-events-none z-0" />
+          <div className="absolute bottom-1/3 right-1/2 w-[350px] h-[350px] bg-amber-600/15 rounded-full blur-[110px] pointer-events-none z-0" />
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a
-              href="#gallery"
-              className="w-full sm:w-auto px-8 py-4 rounded-full bg-[#d4af37] hover:bg-[#b8901c] text-black font-semibold tracking-wide shadow-[0_4px_20px_rgba(214,175,55,0.25)] transition-all duration-300 transform hover:-translate-y-0.5 text-center"
-            >
-              Explore the Gallery
-            </a>
-            <a
-              href="#contact"
-              className="w-full sm:w-auto px-8 py-4 rounded-full bg-transparent hover:bg-neutral-900 text-white font-semibold tracking-wide border border-neutral-800 hover:border-neutral-700 transition-all duration-300 transform hover:-translate-y-0.5 text-center"
-            >
-              Inquire to Buy
-            </a>
-          </div>
+          {/* Img 2 Woman Portrait occupying top to bottom with natural cinematic lighting */}
+          <div
+            role="img"
+            aria-label="NamiArts Hero Portrait"
+            style={{
+              backgroundImage: "url('/hero-woman.png')",
+              backgroundPosition: "center 10%",
+              backgroundSize: "cover",
+            }}
+            className="w-full h-full transform filter contrast-[1.02] brightness-[1.04] saturate-[1.03]"
+          />
+
+          {/* Seamless Soft Edge Masking & Gradient Overlays */}
+          <div className="absolute inset-y-0 left-0 w-full lg:w-[68%] bg-gradient-to-r from-[#090604] via-[#090604]/75 via-45% to-transparent z-10" />
+          <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#090604] via-[#090604]/50 to-transparent z-10" />
+          <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#090604] via-[#090604]/70 to-transparent z-10" />
+          <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-[#090604]/60 to-transparent z-10" />
         </div>
 
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-50 z-10">
-          <span className="text-[10px] uppercase tracking-widest text-neutral-400 font-semibold">Scroll</span>
-          <div className="w-1 h-8 bg-neutral-800 rounded-full overflow-hidden">
-            <div className="w-full h-1/2 bg-[#d4af37] rounded-full animate-bounce" />
+        {/* Hero Content Container (On top of background layer) */}
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 w-full z-10 min-h-[75vh] flex items-center">
+          
+          {/* Left Side Content Column */}
+          <div 
+            ref={heroContentRef}
+            className="w-full lg:max-w-[580px] flex flex-col items-start text-left pt-6 lg:pt-0"
+          >
+            <p className="font-sans text-xl sm:text-2xl font-light text-neutral-200 tracking-tight mb-1 drop-shadow-md">
+              Welcome to
+            </p>
+            
+            <h1 className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-[5.2rem] font-extrabold text-[#d4af37] tracking-tight leading-[1.05] mb-5 drop-shadow-[0_4px_20px_rgba(0,0,0,0.8)]">
+              NAMI<span className="text-[#d4af37]">ARTS</span>
+            </h1>
+
+            {/* Decorative Gold Filigree Divider */}
+            <div className="flex items-center gap-3 w-full max-w-md mb-6">
+              <div className="h-[1px] flex-grow bg-gradient-to-r from-[#d4af37]/90 via-[#d4af37]/40 to-transparent" />
+              <div className="text-[#d4af37] text-sm tracking-[0.3em] font-serif select-none flex items-center justify-center">
+                <svg className="w-6 h-6 text-[#d4af37]" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C11.5 4 9.5 6 7 6C4.5 6 2.5 4 2 2C2.5 4 4.5 6 7 6C9.5 6 11.5 4 12 2ZM12 2C12.5 4 14.5 6 17 6C19.5 6 21.5 4 22 2C21.5 4 19.5 6 17 6C14.5 6 12.5 4 12 2ZM12 22C11.5 20 9.5 18 7 18C4.5 18 2.5 20 2 22C2.5 20 4.5 18 7 18C9.5 18 11.5 20 12 22ZM12 22C12.5 20 14.5 18 17 18C19.5 18 21.5 20 22 22C21.5 20 19.5 18 17 18C14.5 18 12.5 20 12 22Z" opacity="0.4"/>
+                  <circle cx="12" cy="12" r="3" fill="#d4af37" />
+                  <path d="M7 12c1.5-1 3.5-1 5 0M12 12c1.5 1 3.5 1 5 0" stroke="#d4af37" strokeWidth="1.5" fill="none"/>
+                </svg>
+              </div>
+              <div className="h-[1px] flex-grow bg-gradient-to-l from-[#d4af37]/90 via-[#d4af37]/40 to-transparent" />
+            </div>
+
+            <h2 className="font-display text-2xl sm:text-3xl font-semibold text-white tracking-wide mb-4 drop-shadow-md">
+              Choose the Art. Choose the Frame. Make It Yours.
+            </h2>
+
+            <p className="text-sm sm:text-base text-neutral-300 max-w-lg mb-3 leading-relaxed font-sans font-normal drop-shadow">
+              Explore our artwork collection, choose the artwork you love, select your preferred frame type and colour, and get it crafted as a beautiful physical photo frame.
+            </p>
+
+            <p className="text-xs text-[#d4af37] max-w-lg mb-8 leading-relaxed font-sans font-medium flex items-start gap-2 bg-[#d4af37]/10 border border-[#d4af37]/25 px-3.5 py-2.5 rounded-lg shadow-sm">
+              <Sparkles className="w-4 h-4 shrink-0 text-[#d4af37] mt-0.5" />
+              <span>Note: Custom artwork modifications can also be tailored to your specific needs upon request (additional customization charges apply).</span>
+            </p>
+
+            <div className="flex flex-wrap items-center gap-4 w-full sm:w-auto">
+              <a
+                href="#collections"
+                className="w-full sm:w-auto px-8 py-4 rounded-lg bg-[#d4af37] hover:bg-[#c39e2e] text-black font-bold text-sm tracking-wide shadow-[0_4px_25px_rgba(212,175,55,0.35)] transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
+              >
+                Choose Artwork & Frame
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </a>
+              <Link
+                href="/stories"
+                className="w-full sm:w-auto px-8 py-4 rounded-lg bg-black/60 hover:bg-neutral-900 text-white font-semibold text-sm tracking-wide border border-neutral-700/80 hover:border-[#d4af37]/60 transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center gap-2 backdrop-blur-md"
+              >
+                Read Free Stories
+                <BookOpen className="w-4 h-4 text-[#d4af37]" />
+              </Link>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* Customer Journey 3-Step Process Section */}
+      <section className="py-12 md:py-16 bg-[#0c0906] border-t border-neutral-900 select-none">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-10">
+            <span className="text-xs uppercase tracking-widest text-[#d4af37] font-bold mb-2 block">Simple 3-Step Ordering</span>
+            <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-white">How It Works</h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {/* Step 1 */}
+            <div className="p-6 rounded-2xl bg-neutral-900/60 border border-neutral-800 flex flex-col items-start relative group hover:border-[#d4af37]/40 transition-colors">
+              <span className="font-display text-3xl font-black text-[#d4af37] mb-3">01</span>
+              <h3 className="font-display text-lg font-bold text-white mb-2">Choose Your Artwork</h3>
+              <p className="text-sm text-neutral-400 leading-relaxed font-sans">
+                Browse the NamiArts collection and select the artwork design you want.
+              </p>
+            </div>
+
+            {/* Step 2 */}
+            <div className="p-6 rounded-2xl bg-neutral-900/60 border border-neutral-800 flex flex-col items-start relative group hover:border-[#d4af37]/40 transition-colors">
+              <span className="font-display text-3xl font-black text-[#d4af37] mb-3">02</span>
+              <h3 className="font-display text-lg font-bold text-white mb-2">Choose Your Frame</h3>
+              <p className="text-sm text-neutral-400 leading-relaxed font-sans">
+                Select your preferred frame type, style, finish, and colour.
+              </p>
+            </div>
+
+            {/* Step 3 */}
+            <div className="p-6 rounded-2xl bg-neutral-900/60 border border-neutral-800 flex flex-col items-start relative group hover:border-[#d4af37]/40 transition-colors">
+              <span className="font-display text-3xl font-black text-[#d4af37] mb-3">03</span>
+              <h3 className="font-display text-lg font-bold text-white mb-2">Get Your Frame</h3>
+              <p className="text-sm text-neutral-400 leading-relaxed font-sans">
+                Your selected artwork is crafted into a physical photo frame and delivered to you.
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Infinite Moving Disclaimer Marquee */}
       <div className="relative flex overflow-x-hidden w-full py-3 bg-[#0a0a0a] border-y border-neutral-900 select-none z-20 shadow-[0_0_30px_rgba(214,175,55,0.02)]">
-        <div className="animate-marquee-ltr flex whitespace-nowrap shrink-0 gap-10 text-neutral-400 text-[10px] md:text-xs font-bold uppercase tracking-widest">
+        <div className="animate-marquee-rtl flex whitespace-nowrap shrink-0 gap-10 text-neutral-400 text-[10px] md:text-xs font-bold uppercase tracking-widest">
           <span className="text-[#d4af37] px-2 py-0.5 rounded bg-[#d4af37]/10 text-[9px] font-extrabold self-center">Disclaimer</span>
           <span>If our art matches with someone else’s . then consider this as purely coincidental and unintentional as we don’t want to hurt sentiments of any person or community or any religion.</span>
           <span className="text-[#d4af37] self-center">✦</span>
@@ -127,7 +306,7 @@ export default function Home() {
           <span>If our art matches with someone else’s . then consider this as purely coincidental and unintentional as we don’t want to hurt sentiments of any person or community or any religion.</span>
           <span className="text-[#d4af37] self-center">✦</span>
         </div>
-        <div className="animate-marquee-ltr flex whitespace-nowrap shrink-0 gap-10 text-neutral-400 text-[10px] md:text-xs font-bold uppercase tracking-widest" aria-hidden="true">
+        <div className="animate-marquee-rtl flex whitespace-nowrap shrink-0 gap-10 text-neutral-400 text-[10px] md:text-xs font-bold uppercase tracking-widest" aria-hidden="true">
           <span className="text-[#d4af37] px-2 py-0.5 rounded bg-[#d4af37]/10 text-[9px] font-extrabold self-center">Disclaimer</span>
           <span>If our art matches with someone else’s . then consider this as purely coincidental and unintentional as we don’t want to hurt sentiments of any person or community or any religion.</span>
           <span className="text-[#d4af37] self-center">✦</span>
@@ -137,239 +316,163 @@ export default function Home() {
         </div>
       </div>
 
-      <section id="about" className="py-16 md:py-24 border-t border-neutral-900 bg-neutral-950/20 relative">
+      {/* Explore Our Art Collections Section */}
+      <AnimatedSection direction="up">
+        <ArtCollectionsSection artworks={artworks} />
+      </AnimatedSection>
+
+      {/* About Section with Scroll Animations */}
+      <section ref={aboutSectionRef} id="about" className="py-16 md:py-24 border-t border-neutral-900 bg-neutral-950/20 relative">
         <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10 md:gap-16 items-center">
           {/* Visual container (Left side) */}
-          <div className="relative aspect-[9/16] w-full max-w-[360px] lg:max-w-[400px] mx-auto rounded-2xl overflow-hidden bg-neutral-900 border border-neutral-800/80 flex items-center justify-center group select-none protected-image">
-            {/* Invisible protection shield overlay to prevent direct saving */}
-            <div className="absolute inset-0 z-20" onContextMenu={(e) => e.preventDefault()} />
-            
-            <div className="absolute inset-0 ambient-glow z-10 pointer-events-none" />
-            
-            {/* Secure visible image container using background-image */}
-            <div
-              role="img"
-              aria-label="NamiArts Studio"
-              style={{ backgroundImage: "url('/about_art.jpg')" }}
-              className="h-full w-full bg-cover bg-bottom transition-transform duration-750 ease-out group-hover:scale-105 pointer-events-none select-none z-0"
-            />
-            {/* Subtle glow border */}
-            <div className="absolute inset-0 border border-amber-500/10 group-hover:border-amber-500/20 transition-colors duration-500 rounded-2xl z-30" />
-          </div>
+          <AnimatedSection direction="right" delay={0.1}>
+            <div className="relative aspect-[9/16] w-full max-w-[360px] lg:max-w-[400px] mx-auto rounded-2xl overflow-hidden bg-neutral-900 border border-neutral-800/80 flex items-center justify-center group select-none protected-image">
+              <div className="absolute inset-0 z-20" onContextMenu={(e) => e.preventDefault()} />
+              <div className="absolute inset-0 ambient-glow z-10 pointer-events-none" />
+              
+              <div
+                ref={aboutImageRef}
+                role="img"
+                aria-label="NamiArts Studio"
+                style={{ backgroundImage: "url('/about_art.jpg')" }}
+                className="h-full w-full bg-cover bg-bottom transition-transform duration-750 ease-out group-hover:scale-105 pointer-events-none select-none z-0"
+              />
+              <div className="absolute inset-0 border border-amber-500/10 group-hover:border-amber-500/20 transition-colors duration-500 rounded-2xl z-30" />
+            </div>
+          </AnimatedSection>
 
           {/* About description (Right side) */}
-          <div className="flex flex-col">
-            <span className="text-xs uppercase tracking-widest text-[#d4af37] font-bold mb-3">The Studio</span>
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-white tracking-wide mb-6">
-              About NamiArts
-            </h2>
-            <p className="text-neutral-400 leading-relaxed font-sans mb-6">
-              NamiArts is a premium digital art studio and creative brand. With a deep passion for digital media, character concept art, and high-fidelity rendering, NamiArts focuses on blending artistic expression with high technical precision.
-            </p>
-            <p className="text-neutral-400 leading-relaxed font-sans mb-0">
-              Every digital piece is made originally by us, then enhanced and curated using AI to deliver the highest resolution masterwork. We design immersive visual identities and custom artwork tailored for collectors, gamers, and enthusiasts looking to possess premium digital media.
-            </p>
-          </div>
+          <AnimatedSection direction="left" delay={0.25}>
+            <div className="flex flex-col">
+              <span className="text-xs uppercase tracking-widest text-[#d4af37] font-bold mb-3">The Studio</span>
+              <h2 className="font-display text-3xl md:text-4xl font-bold text-white tracking-wide mb-6">
+                About NamiArts
+              </h2>
+              <p className="text-neutral-400 leading-relaxed font-sans mb-6">
+                NamiArts is a premium artwork and custom photo frame brand. We design original visual masterworks and craft them into high-quality physical photo frames tailored for collectors, homeowners, and art enthusiasts.
+              </p>
+              <p className="text-neutral-400 leading-relaxed font-sans mb-0">
+                Every artwork is created originally by us and rendered with ultra-high resolution precision. Choose your preferred frame style and colour, and we will craft a physical photo frame to elevate your space.
+              </p>
+            </div>
+          </AnimatedSection>
         </div>
       </section>
 
-      {/* Dynamic Artwork Gallery Section */}
-      <section id="gallery" className="py-16 md:py-24 border-t border-neutral-900 relative">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center max-w-2xl mx-auto mb-10 md:mb-16">
-            <span className="text-xs uppercase tracking-widest text-[#d4af37] font-bold mb-3">Portfolio</span>
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-white tracking-wide mb-4">
-              Curated Masterpieces
-            </h2>
-            <p className="text-neutral-400">
-              Browse original digital drawings and character art. Click any artwork to view high-resolution previews and buying details.
-            </p>
-          </div>
-
-          {!loading && artworks.length > 0 && (
-            <div className="max-w-md mx-auto mb-12 relative z-20">
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500">
-                  <Search className="w-5 h-5" />
-                </span>
-                <input
-                  type="text"
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  placeholder="Search artwork title or post number..."
-                  className="w-full bg-neutral-900/60 border border-neutral-800 hover:border-neutral-750 focus:border-[#d4af37] rounded-full pl-12 pr-10 py-3.5 text-sm text-white placeholder-neutral-500 focus:outline-none transition-all duration-300 shadow-inner"
-                />
-                {searchInput && (
-                  <button
-                    onClick={() => setSearchInput("")}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-white transition-colors cursor-pointer"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-4">
-              <div className="w-10 h-10 border-4 border-neutral-800 border-t-[#d4af37] rounded-full animate-spin" />
-              <p className="text-neutral-500 text-sm">Opening the gallery vaults...</p>
-            </div>
-          ) : artworks.length === 0 ? (
-            <div className="text-center py-16 bg-neutral-900/10 border border-neutral-800/80 rounded-2xl max-w-md mx-auto px-6">
-              <ShieldAlert className="w-10 h-10 text-neutral-600 mx-auto mb-4" />
-              <h3 className="font-display text-lg font-bold text-white mb-2">Gallery is Empty</h3>
-              <p className="text-neutral-400 text-sm">
-                No artworks are currently listed. Please check back later as the gallery updates dynamically!
-              </p>
-            </div>
-          ) : filteredArtworks.length === 0 ? (
-            <div className="text-center py-16 bg-neutral-900/10 border border-neutral-800/80 rounded-2xl max-w-md mx-auto px-6 z-10 relative">
-              <ShieldAlert className="w-10 h-10 text-neutral-600 mx-auto mb-4" />
-              <h3 className="font-display text-lg font-bold text-white mb-2">No Matches Found</h3>
-              <p className="text-neutral-400 text-sm mb-6">
-                We couldn't find any artworks matching "{searchQuery}".
-              </p>
-              <button
-                onClick={() => setSearchQuery("")}
-                className="px-5 py-2.5 rounded-full bg-neutral-800 hover:bg-[#d4af37] text-white hover:text-black font-semibold text-xs tracking-wider uppercase transition-colors cursor-pointer"
-              >
-                Clear Search
-              </button>
-            </div>
-          ) : (
-            <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {displayArtworks.map((art) => (
-                  <ArtworkCard
-                    key={art.id}
-                    id={art.id}
-                    title={art.title}
-                    price={art.price}
-                    imageUrl={art.imageUrl}
-                  />
-                ))}
-              </div>
-
-              {!searchQuery && artworks.length > 6 && (
-                <div className="flex justify-center mt-12">
-                  <button
-                    onClick={() => setShowAllArtworks(!showAllArtworks)}
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#d4af37]/35 bg-neutral-900/60 hover:bg-[#d4af37] text-white hover:text-black font-semibold text-xs tracking-wider uppercase transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer shadow-md"
-                  >
-                    {showAllArtworks ? (
-                      <>
-                        Show Less
-                        <ChevronUp className="w-4 h-4" />
-                      </>
-                    ) : (
-                      <>
-                        View More Artworks
-                        <ChevronDown className="w-4 h-4 animate-bounce" />
-                      </>
-                    )}
-                  </button>
-                </div>
-              )}
-            </>
-          )}
+      {/* Section Transition Indicator between About and Contact */}
+      <div className="relative w-full max-w-6xl mx-auto px-6 z-20 flex items-center justify-center -my-px pointer-events-none">
+        <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-[#d4af37]/50 to-transparent" />
+        <div className="absolute px-4 py-1.5 rounded-full bg-neutral-950 border border-[#d4af37]/40 shadow-lg shadow-black/80 flex items-center gap-2 text-xs font-semibold text-[#d4af37] uppercase tracking-widest backdrop-blur-md">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37] animate-pulse" />
+          Contact & Inquiries
+          <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37] animate-pulse" />
         </div>
-      </section>
+      </div>
 
-      {/* Contact Section */}
+      {/* Contact Section with Staggered Scroll Animations */}
       <section id="contact" className="py-16 md:py-24 border-t border-neutral-900 bg-neutral-950/20 relative">
         <div className="absolute inset-0 ambient-glow z-0" />
         <div className="max-w-4xl mx-auto px-6 text-center z-10 relative">
-          <span className="text-xs uppercase tracking-widest text-[#d4af37] font-bold mb-3">Acquisitions</span>
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-white tracking-wide mb-6">
-            Inquire About Purchasing
-          </h2>
-          <p className="text-neutral-400 max-w-xl mx-auto mb-8 leading-relaxed">
-            Interested in owning any of our showcased digital artworks? Get in touch directly via WhatsApp or Email to coordinate secure payment and digital transfer.
-          </p>
+          <AnimatedSection direction="up">
+            <span className="text-xs uppercase tracking-widest text-[#d4af37] font-bold mb-3">Order Photo Frames</span>
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-white tracking-wide mb-6">
+              Inquire & Order Your Frame
+            </h2>
+            <p className="text-neutral-400 max-w-xl mx-auto mb-8 leading-relaxed">
+              Interested in ordering a physical photo frame of any of our showcased artworks? Get in touch directly via WhatsApp or Email to choose your frame options and coordinate payment and delivery.
+            </p>
+          </AnimatedSection>
 
           {/* Customization Callout Banner */}
-          <div className="max-w-xl mx-auto mb-6 p-6 rounded-2xl bg-amber-500/5 border border-[#d4af37]/25 backdrop-blur-sm text-center">
-            <span className="inline-flex items-center gap-1.5 text-xs text-[#d4af37] font-bold uppercase tracking-widest mb-2">
-              <Sparkles className="w-4 h-4 animate-pulse" />
-              Tailored Custom Artworks
-            </span>
-            <h3 className="font-display text-lg font-bold text-white mb-2">
-              Personalized Art Customization
-            </h3>
-            <p className="text-sm text-neutral-300 max-w-md mx-auto leading-relaxed">
-              Any artwork displayed in our gallery can be custom-tailored to suit your personal style, character details, or color preferences. Customizations will incur a slightly higher charge than the standard price based on the complexity.
-            </p>
-          </div>
+          <AnimatedSection direction="up" delay={0.15}>
+            <div className="max-w-xl mx-auto mb-6 p-6 rounded-2xl bg-amber-500/5 border border-[#d4af37]/25 backdrop-blur-sm text-center hover:border-[#d4af37]/50 transition-colors duration-300">
+              <span className="inline-flex items-center gap-1.5 text-xs text-[#d4af37] font-bold uppercase tracking-widest mb-2">
+                <Sparkles className="w-4 h-4 animate-pulse" />
+                Custom Frame Options
+              </span>
+              <h3 className="font-display text-lg font-bold text-white mb-2">
+                Frame Style & Color Customization
+              </h3>
+              <p className="text-sm text-neutral-300 max-w-md mx-auto leading-relaxed">
+                Choose from a variety of frame materials, borders, and color finishes. Custom size and artwork personalization requests can also be accommodated.
+              </p>
+            </div>
+          </AnimatedSection>
 
           {/* Copyright Disclaimer Banner */}
-          <div className="max-w-xl mx-auto mb-6 p-6 rounded-2xl bg-neutral-900/40 border border-neutral-855 text-center text-xs text-neutral-400 font-sans leading-relaxed">
-            <strong className="text-neutral-200 block mb-1">Copyright License Disclaimer:</strong>
-            <strong>Purchasing any digital artwork from NamiArts grants a personal-use license only. All copyrights, intellectual property, and commercial distribution rights remain exclusively with NamiArts, and we reserve the right to showcase, reproduce, or resell the same artwork to other clients.</strong>
-          </div>
+          <AnimatedSection direction="up" delay={0.2}>
+            <div className="max-w-xl mx-auto mb-6 p-6 rounded-2xl bg-neutral-900/40 border border-neutral-855 text-center text-xs text-neutral-400 font-sans leading-relaxed">
+              <strong className="text-neutral-200 block mb-1">Copyright License Disclaimer:</strong>
+              <strong>Purchasing a physical photo frame from NamiArts grants physical ownership of the framed product. All original artwork copyrights, intellectual property, and commercial distribution rights remain exclusively with NamiArts.</strong>
+            </div>
+          </AnimatedSection>
 
           {/* Terms Agreement Checkbox */}
-          <div className="max-w-xl mx-auto mb-12 p-4 bg-neutral-950/70 border border-neutral-850 rounded-xl flex items-start gap-3 select-none text-left">
-            <input
-              id="terms-agreement-checkbox"
-              type="checkbox"
-              checked={agreed}
-              onChange={(e) => setAgreed(e.target.checked)}
-              className="mt-1 h-5 w-5 min-w-[20px] rounded border-neutral-700 bg-neutral-900 text-[#d4af37] focus:ring-[#d4af37] focus:ring-offset-neutral-955 accent-[#d4af37] cursor-pointer"
-            />
-            <label htmlFor="terms-agreement-checkbox" className="text-xs font-bold text-neutral-350 leading-snug uppercase tracking-wider cursor-pointer">
-              By checking this box you agree to all of our{" "}
-              <Link href="/legal" target="_blank" rel="noopener noreferrer" className="text-[#d4af37] hover:underline normal-case font-extrabold">
-                Terms & Conditions
-              </Link>
-            </label>
-          </div>
+          <AnimatedSection direction="up" delay={0.25}>
+            <div className="max-w-xl mx-auto mb-12 p-4 bg-neutral-950/70 border border-neutral-850 rounded-xl flex items-start gap-3 select-none text-left">
+              <input
+                id="terms-agreement-checkbox"
+                type="checkbox"
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
+                className="mt-1 h-5 w-5 min-w-[20px] rounded border-neutral-700 bg-neutral-900 text-[#d4af37] focus:ring-[#d4af37] focus:ring-offset-neutral-955 accent-[#d4af37] cursor-pointer"
+              />
+              <label htmlFor="terms-agreement-checkbox" className="text-xs font-bold text-neutral-350 leading-snug uppercase tracking-wider cursor-pointer">
+                By checking this box you agree to all of our{" "}
+                <Link href="/legal" target="_blank" rel="noopener noreferrer" className="text-[#d4af37] hover:underline normal-case font-extrabold">
+                  Terms & Conditions
+                </Link>
+              </label>
+            </div>
+          </AnimatedSection>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 max-w-lg mx-auto">
-            {agreed ? (
-              <a
-                href={`https://mail.google.com/mail/?view=cm&fs=1&to=${contactEmail}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full sm:w-1/2 flex items-center justify-center gap-3 py-4 px-6 rounded-xl bg-neutral-900 hover:bg-neutral-850 text-white font-semibold border border-neutral-800 hover:border-neutral-700 transition-all duration-300"
-              >
-                <Mail className="w-5 h-5 text-[#d4af37]" />
-                {contactEmail}
-              </a>
-            ) : (
-              <button
-                disabled
-                className="w-full sm:w-1/2 flex items-center justify-center gap-3 py-4 px-6 rounded-xl bg-neutral-900/20 text-neutral-500 font-bold border border-neutral-855/50 text-sm cursor-not-allowed"
-                title="Please agree to the terms and conditions first"
-              >
-                <Mail className="w-5 h-5 text-neutral-600" />
-                {contactEmail}
-              </button>
-            )}
+          <StaggerContainer className="flex flex-col sm:flex-row items-center justify-center gap-6 max-w-lg mx-auto">
+            <StaggerItem className="w-full sm:w-1/2">
+              {agreed ? (
+                <a
+                  href={`https://mail.google.com/mail/?view=cm&fs=1&to=${contactEmail}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full flex items-center justify-center gap-3 py-4 px-6 rounded-xl bg-neutral-900 hover:bg-neutral-850 text-white font-semibold border border-neutral-800 hover:border-neutral-700 transition-all duration-300"
+                >
+                  <Mail className="w-5 h-5 text-[#d4af37]" />
+                  {contactEmail}
+                </a>
+              ) : (
+                <button
+                  disabled
+                  className="w-full flex items-center justify-center gap-3 py-4 px-6 rounded-xl bg-neutral-900/20 text-neutral-500 font-bold border border-neutral-855/50 text-sm cursor-not-allowed"
+                  title="Please agree to the terms and conditions first"
+                >
+                  <Mail className="w-5 h-5 text-neutral-600" />
+                  {contactEmail}
+                </button>
+              )}
+            </StaggerItem>
 
-            {agreed ? (
-              <a
-                href={`https://wa.me/${whatsappNumber}?text=${whatsappMessage}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full sm:w-1/2 flex items-center justify-center gap-3 py-4 px-6 rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-white font-semibold transition-all duration-300 shadow-[0_4px_15px_rgba(37,211,102,0.15)]"
-              >
-                <MessageSquare className="w-5 h-5" />
-                WhatsApp Us
-              </a>
-            ) : (
-              <button
-                disabled
-                className="w-full sm:w-1/2 flex items-center justify-center gap-3 py-4 px-6 rounded-xl bg-[#25D366]/20 text-white/30 font-bold text-center text-sm cursor-not-allowed border border-neutral-800/50"
-                title="Please agree to the terms and conditions first"
-              >
-                <MessageSquare className="w-5 h-5 text-white/20" />
-                WhatsApp Us
-              </button>
-            )}
-          </div>
-
+            <StaggerItem className="w-full sm:w-1/2">
+              {agreed ? (
+                <a
+                  href={`https://wa.me/${whatsappNumber}?text=${whatsappMessage}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full flex items-center justify-center gap-3 py-4 px-6 rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-white font-semibold transition-all duration-300 shadow-[0_4px_15px_rgba(37,211,102,0.15)]"
+                >
+                  <MessageSquare className="w-5 h-5" />
+                  WhatsApp Us
+                </a>
+              ) : (
+                <button
+                  disabled
+                  className="w-full flex items-center justify-center gap-3 py-4 px-6 rounded-xl bg-[#25D366]/20 text-white/30 font-bold text-center text-sm cursor-not-allowed border border-neutral-800/50"
+                  title="Please agree to the terms and conditions first"
+                >
+                  <MessageSquare className="w-5 h-5 text-white/20" />
+                  WhatsApp Us
+                </button>
+              )}
+            </StaggerItem>
+          </StaggerContainer>
 
         </div>
       </section>
@@ -379,6 +482,9 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="font-display text-base font-bold text-white tracking-widest">NAMI<span className="text-[#d4af37]">ARTS</span></p>
           <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+            <Link href="/#about" className="hover:text-[#d4af37] transition-colors duration-200 text-neutral-450 hover:underline">
+              About Us
+            </Link>
             <Link href="/legal" className="hover:text-[#d4af37] transition-colors duration-200 text-neutral-450 hover:underline">
               Terms & Legal
             </Link>

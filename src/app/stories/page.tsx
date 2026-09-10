@@ -7,22 +7,24 @@ import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { 
   BookOpen, 
-  Calendar, 
-  Clock, 
   ArrowLeft, 
   Search, 
   Sparkles, 
   X, 
-  Filter,
-  Bookmark,
-  ChevronRight,
-  TrendingUp,
-  Maximize2,
-  Minimize2,
-  ChevronDown,
-  ChevronUp,
-  Loader2
+  Bookmark, 
+  ChevronRight, 
+  Maximize2, 
+  Minimize2, 
+  ChevronDown, 
+  Loader2,
+  Grid,
+  List as ListIcon,
+  Flame,
+  Clock,
+  Layers,
+  BookMarked
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Story {
   id: string;
@@ -36,8 +38,6 @@ interface Story {
   tags: string[];
   featured?: boolean;
 }
-
-const storiesData: Story[] = [];
 
 // StoryImage subcomponent to handle page loading state spinner per slide
 const StoryImage = ({ url, alt }: { url: string; alt: string }) => {
@@ -63,8 +63,8 @@ const StoryImage = ({ url, alt }: { url: string; alt: string }) => {
         role="img"
         aria-label={alt}
         style={{ backgroundImage: `url(${url})` }}
-        className={`w-full h-full bg-contain bg-center bg-no-repeat pointer-events-none select-none transition-opacity duration-300 ${
-          loaded ? "opacity-100" : "opacity-0"
+        className={`w-full h-full bg-contain bg-center bg-no-repeat pointer-events-none select-none transition-opacity duration-500 ${
+          loaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
         }`}
       />
     </div>
@@ -72,10 +72,13 @@ const StoryImage = ({ url, alt }: { url: string; alt: string }) => {
 };
 
 export default function StoriesPage() {
-  const [searchQuery, setSearchQuery] = useState<string>(" ");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [selectedTag, setSelectedTag] = useState<string>("All");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedStory, setSelectedStory] = useState<Story | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState<number>(0);
   const [dynamicStories, setDynamicStories] = useState<Story[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const viewerRef = useRef<HTMLDivElement>(null);
@@ -107,10 +110,10 @@ export default function StoriesPage() {
     isTransitioning.current = true;
     setActiveImageIndex(newIndex);
     
-    // 600ms transition lock matching CSS duration
+    // 500ms transition lock
     setTimeout(() => {
       isTransitioning.current = false;
-    }, 600);
+    }, 500);
   };
 
   const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
@@ -156,7 +159,7 @@ export default function StoriesPage() {
   };
 
   useEffect(() => {
-    document.title = "NamiArts | Stories & Concept Lore";
+    document.title = "NamiArts | Illustrated Stories & Manga Lore";
   }, []);
 
   // Sync body scroll locking when reader is active
@@ -216,204 +219,300 @@ export default function StoriesPage() {
           const dateObj = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
           formattedDate = dateObj.toLocaleDateString("en-US", {
             year: "numeric",
-            month: "long",
+            month: "short",
             day: "numeric"
           });
         }
 
-        // Split content by newlines to form paragraphs
+        // Split content by newlines
         const paragraphs = data.content
           ? data.content.split(/\n+/).map((p: string) => p.trim()).filter((p: string) => p.length > 0)
           : [];
 
         // Estimate reading time
         const wordCount = data.content ? data.content.trim().split(/\s+/).length : 0;
-        const readTimeVal = Math.max(1, Math.ceil(wordCount / 180));
-        const readTime = `${readTimeVal} min read`;
+        const pageCount = (data.imageUrls && data.imageUrls.length) || 1;
+        const readTime = `${Math.max(1, Math.ceil(wordCount / 180) + pageCount)} min read`;
 
-        // Generate summary from content
-        const summary = data.content && data.content.length > 130
-          ? data.content.slice(0, 130).trim() + "..."
-          : (data.content || "");
+        // Generate summary
+        const summary = data.content && data.content.length > 140
+          ? data.content.slice(0, 140).trim() + "..."
+          : (data.content || "Illustrated story chapter.");
 
-        // Dynamic tags
-        const tags = ["Story", data.title.split(" ")[0]];
+        const tags = ["All", "Manga", "Illustrated"];
+        if (data.category) tags.push(data.category);
 
         fetchedStories.push({
           id: storyId,
-          title: data.title,
+          title: data.title || "Untitled Story",
           summary: summary,
           date: formattedDate,
           readTime: readTime,
-          imageUrl: data.imageUrl,
+          imageUrl: data.imageUrl || (data.imageUrls && data.imageUrls[0]) || "",
           imageUrls: data.imageUrls || (data.imageUrl ? [data.imageUrl] : []),
           tags: tags,
           content: paragraphs
         });
       });
       setDynamicStories(fetchedStories);
+      setLoading(false);
     }, (error) => {
       console.error("Error fetching dynamic stories:", error);
+      setLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
-  const allStories = [...storiesData, ...dynamicStories];
+  // Compute available tags
+  const tagsList = ["All", "Manga", "Illustrated", "Devotional", "Fantasy", "Action"];
 
   // Filtered stories logic
-  const filteredStories = allStories.filter((story) => {
+  const filteredStories = dynamicStories.filter((story) => {
     const matchesSearch = searchQuery.trim() === "" || 
       story.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      story.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      story.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchesSearch;
+      story.summary.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesTag = selectedTag === "All" || story.tags.includes(selectedTag);
+
+    return matchesSearch && matchesTag;
   });
 
-  const featuredStory = allStories.find(s => s.featured) || allStories[0];
+  const featuredStory = dynamicStories[0];
 
   return (
     <>
       <Navbar />
 
-      <main className="min-h-screen pt-28 pb-20 bg-neutral-950 relative flex flex-col">
-        {/* Glow ambient background */}
-        <div className="absolute inset-0 ambient-glow z-0 pointer-events-none" />
-        <div className="absolute top-1/4 left-1/3 w-[500px] h-[500px] bg-[#d4af37]/5 rounded-full blur-[150px] pointer-events-none" />
+      <main className="min-h-screen pt-28 pb-20 bg-[#090604] text-neutral-100 relative flex flex-col overflow-x-hidden select-none">
+        {/* Glow ambient background layers */}
+        <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-amber-500/10 rounded-full blur-[160px] pointer-events-none z-0" />
+        <div className="absolute top-1/3 left-1/4 w-[500px] h-[500px] bg-yellow-500/5 rounded-full blur-[140px] pointer-events-none z-0" />
 
-        <div className="max-w-6xl mx-auto px-6 relative z-10 w-full flex-grow flex flex-col">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full flex-grow flex flex-col">
           
-          {/* Header */}
-          <div className="text-center max-w-2xl mx-auto mb-12 animate-fade-in">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-neutral-900 border border-neutral-850 text-[#d4af37] text-xs font-semibold uppercase tracking-wider mb-4">
-              <BookOpen className="w-3.5 h-3.5" />
-              Creative Lore & Backgrounds
+          {/* Header Banner */}
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="text-center max-w-3xl mx-auto mb-12"
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#d4af37]/10 border border-[#d4af37]/30 text-[#d4af37] text-xs font-semibold uppercase tracking-widest mb-4 shadow-sm">
+              <Sparkles className="w-3.5 h-3.5" />
+              NamiArts Lore & Illustrated Manga
             </div>
-            <h1 className="font-display text-3xl sm:text-4xl md:text-6xl font-bold text-white tracking-tight mb-4">
-              Stories behind the <span className="shimmer-text">Art</span>
+            <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-extrabold text-white tracking-tight mb-4">
+              Original <span className="text-[#d4af37] underline decoration-[#d4af37]/40 underline-offset-8">Illustrated Stories</span>
             </h1>
-            <p className="text-neutral-400 text-sm md:text-base font-sans leading-relaxed">
-              Explore the rich lore, character concepts, and artistic journeys that shape each original digital piece in the NamiArts gallery.
+            <p className="text-neutral-400 text-sm sm:text-base font-sans leading-relaxed">
+              Step inside our vibrant world. Read original manga chapters, concept lore, and background stories created exclusively for NamiArts.
             </p>
-          </div>
+          </motion.div>
 
-          {/* Featured Story Section */}
-          {featuredStory && searchQuery.trim() === "" && (
-            <div className="mb-12 bg-neutral-900/40 border border-neutral-850 rounded-3xl overflow-hidden backdrop-blur-md group hover:border-[#d4af37]/30 transition-all duration-500">
-              <div className="grid md:grid-cols-12 gap-0">
-                <div className="md:col-span-5 relative aspect-[16/10] md:aspect-[3/4] w-full overflow-hidden bg-neutral-955">
-                  <div className="absolute inset-0 z-10 bg-gradient-to-t md:bg-gradient-to-r from-neutral-950/80 via-transparent to-transparent" />
-                  {/* Secure visible image container using background-image */}
+          {/* Featured Highlight Banner */}
+          {featuredStory && searchQuery.trim() === "" && selectedTag === "All" && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.97 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+              className="mb-14 relative rounded-3xl overflow-hidden bg-gradient-to-br from-neutral-900 via-neutral-900/90 to-neutral-950 border border-[#d4af37]/30 shadow-[0_10px_40px_rgba(0,0,0,0.6)] group"
+            >
+              <div className="grid grid-cols-1 lg:grid-cols-12 items-center">
+                <div className="lg:col-span-6 relative h-72 sm:h-96 w-full overflow-hidden bg-neutral-950 protected-image">
                   <div
                     role="img"
                     aria-label={featuredStory.title}
                     style={{ backgroundImage: `url(${featuredStory.imageUrl})` }}
-                    className="absolute inset-0 h-full w-full bg-cover bg-[center_38%] transition-transform duration-1000 group-hover:scale-105 pointer-events-none select-none"
+                    className="absolute inset-0 h-full w-full bg-cover bg-center group-hover:scale-105 transition-transform duration-700 pointer-events-none"
                   />
-                  <span className="absolute top-4 left-4 z-20 px-3 py-1 rounded-full bg-[#d4af37] text-black text-[10px] font-extrabold uppercase tracking-widest shadow-lg">
-                    Most Recent
-                  </span>
+                  <div className="absolute inset-0 bg-gradient-to-t lg:bg-gradient-to-r from-neutral-900 via-neutral-900/40 to-transparent" />
+                  <div className="absolute top-4 left-4 flex items-center gap-2">
+                    <span className="px-3.5 py-1 rounded-full bg-[#d4af37] text-black text-[11px] font-extrabold uppercase tracking-wider flex items-center gap-1.5 shadow-lg">
+                      <Flame className="w-3.5 h-3.5 fill-black" />
+                      Featured Story
+                    </span>
+                    <span className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-bold border border-white/20">
+                      {featuredStory.imageUrls?.length || 1} Pages
+                    </span>
+                  </div>
                 </div>
-                <div className="md:col-span-7 p-8 flex flex-col justify-center">
-                  <h2 className="font-display text-2xl md:text-3xl font-bold text-white mb-4 group-hover:text-[#d4af37] transition-colors duration-300">
+
+                <div className="lg:col-span-6 p-6 sm:p-10 flex flex-col justify-center">
+                  <div className="flex items-center gap-4 text-xs text-[#d4af37] font-semibold mb-3">
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5" />
+                      {featuredStory.readTime}
+                    </span>
+                    <span>•</span>
+                    <span>{featuredStory.date}</span>
+                  </div>
+
+                  <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 group-hover:text-[#d4af37] transition-colors duration-300">
                     {featuredStory.title}
                   </h2>
-                  {featuredStory.summary && featuredStory.summary.trim() !== "" && (
-                    <p className="text-neutral-400 text-sm md:text-base leading-relaxed mb-6 font-sans">
-                      {featuredStory.summary}
-                    </p>
-                  )}
-                  <div>
+
+                  <p className="text-neutral-300 text-sm sm:text-base leading-relaxed mb-6 line-clamp-3 font-sans">
+                    {featuredStory.summary}
+                  </p>
+
+                  <div className="flex items-center gap-4">
                     <button
                       onClick={() => handleSelectStory(featuredStory)}
-                      className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#d4af37] hover:bg-[#b8901c] text-black font-bold text-sm tracking-wide shadow-md transition-all duration-300 transform hover:-translate-y-0.5"
+                      className="px-7 py-3.5 rounded-xl bg-[#d4af37] hover:bg-[#c39e2e] text-black font-bold text-sm tracking-wide shadow-[0_4px_20px_rgba(212,175,55,0.3)] transition-all duration-300 transform hover:-translate-y-0.5 flex items-center gap-2 cursor-pointer"
                     >
-                      Read Full Story
+                      <BookMarked className="w-4.5 h-4.5" />
+                      Read Story Now
                       <ChevronRight className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           )}
 
-          {/* Search Bar */}
-          <div className="flex justify-end mb-8">
-            <div className="relative w-full md:w-72">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
-              <input
-                type="text"
-                placeholder="Search lore, tags, titles..."
-                value={searchQuery === " " ? "" : searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 rounded-full bg-neutral-900 border border-neutral-800 text-neutral-100 placeholder-neutral-500 text-xs focus:outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] transition-all"
-              />
-              {searchQuery.trim() !== "" && (
+          {/* Search, Filter Tabs & View Controls */}
+          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 mb-8">
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-none">
+              {tagsList.map((tag) => (
                 <button
-                  onClick={() => setSearchQuery(" ")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-white transition-colors"
+                  key={tag}
+                  onClick={() => setSelectedTag(tag)}
+                  className={`px-4 py-2 rounded-full text-xs font-bold tracking-wide transition-all shrink-0 cursor-pointer ${
+                    selectedTag === tag
+                      ? "bg-[#d4af37] text-black shadow-md scale-105"
+                      : "bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-300"
+                  }`}
                 >
-                  <X className="w-3.5 h-3.5" />
+                  {tag}
                 </button>
-              )}
+              ))}
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="relative flex-grow md:w-72">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
+                <input
+                  type="text"
+                  placeholder="Search story title or lore..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-8 py-2.5 rounded-full bg-neutral-900 border border-neutral-800 text-neutral-100 placeholder-neutral-500 text-xs focus:outline-none focus:border-[#d4af37] transition-all"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-white"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center rounded-full bg-neutral-900 border border-neutral-800 p-1 shrink-0">
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`p-2 rounded-full transition-colors cursor-pointer ${
+                    viewMode === "grid" ? "bg-[#d4af37] text-black" : "text-neutral-400 hover:text-white"
+                  }`}
+                  title="Grid View"
+                >
+                  <Grid className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`p-2 rounded-full transition-colors cursor-pointer ${
+                    viewMode === "list" ? "bg-[#d4af37] text-black" : "text-neutral-400 hover:text-white"
+                  }`}
+                  title="List View"
+                >
+                  <ListIcon className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Stories Grid */}
-          {filteredStories.length === 0 ? (
-            <div className="text-center py-20 bg-neutral-900/10 border border-neutral-900 rounded-3xl max-w-md mx-auto px-6 w-full my-8">
+          {/* Stories List / Grid */}
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-24 gap-4">
+              <Loader2 className="w-10 h-10 text-[#d4af37] animate-spin" />
+              <p className="text-neutral-400 text-sm font-sans">Loading story archives...</p>
+            </div>
+          ) : filteredStories.length === 0 ? (
+            <div className="text-center py-20 bg-neutral-900/30 border border-neutral-850 rounded-3xl max-w-md mx-auto px-6 w-full my-8">
               <Bookmark className="w-12 h-12 text-neutral-600 mx-auto mb-4" />
               <h3 className="font-display text-lg font-bold text-white mb-2">No Stories Found</h3>
-              <p className="text-neutral-400 text-sm font-sans">
-                We couldn't find any stories matching your search or filters. Please try another query or reset the filters.
+              <p className="text-neutral-400 text-sm font-sans mb-6">
+                No stories match your filter criteria or search query.
               </p>
               <button
                 onClick={() => {
-                  setSearchQuery(" ");
+                  setSearchQuery("");
+                  setSelectedTag("All");
                 }}
-                className="mt-6 px-5 py-2.5 bg-neutral-800 hover:bg-neutral-700 text-white rounded-xl text-xs font-semibold border border-neutral-700 transition-colors"
+                className="px-5 py-2.5 bg-[#d4af37] text-black hover:bg-[#c39e2e] rounded-xl text-xs font-bold transition-colors cursor-pointer"
               >
-                Reset Filters
+                Reset All Filters
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+            <div
+              className={
+                viewMode === "grid"
+                  ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-16"
+                  : "flex flex-col gap-4 mb-16"
+              }
+            >
               {filteredStories.map((story) => (
                 <article
                   key={story.id}
-                  className="bg-neutral-900/20 border border-neutral-900 hover:border-neutral-800/80 rounded-2xl p-6 flex flex-col backdrop-blur-sm group hover:bg-neutral-900/40 hover:-translate-y-1 transition-all duration-300"
+                  className={`bg-neutral-900/50 border border-neutral-800/80 hover:border-[#d4af37]/50 rounded-2xl overflow-hidden backdrop-blur-sm group hover:shadow-[0_8px_30px_rgba(212,175,55,0.1)] transition-all duration-300 flex ${
+                    viewMode === "grid" ? "flex-col" : "flex-col sm:flex-row items-center p-4 gap-6"
+                  }`}
                 >
-                  {/* Story Card Image */}
-                  <div className="relative aspect-[16/10] w-full rounded-xl overflow-hidden mb-5 bg-neutral-955">
-                    {/* Secure visible image container using background-image */}
+                  <div
+                    className={`relative overflow-hidden bg-neutral-950 protected-image shrink-0 ${
+                      viewMode === "grid" ? "aspect-[16/10] w-full" : "aspect-square w-full sm:w-48 rounded-xl"
+                    }`}
+                  >
                     <div
                       role="img"
                       aria-label={story.title}
                       style={{ backgroundImage: `url(${story.imageUrl})` }}
-                      className={`h-full w-full bg-cover bg-top transition-transform duration-700 group-hover:scale-105 pointer-events-none select-none ${
-                        story.id === "neon-horizon" ? "hue-rotate-60 saturate-150 contrast-125" : ""
-                      }`}
+                      className="h-full w-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105 pointer-events-none select-none"
                     />
+                    <div className="absolute top-3 left-3 px-2.5 py-1 rounded-md bg-black/60 backdrop-blur-md text-[10px] font-bold text-[#d4af37] border border-[#d4af37]/30 flex items-center gap-1">
+                      <Layers className="w-3 h-3" />
+                      {story.imageUrls?.length || 1} Pages
+                    </div>
                   </div>
 
-                  <h3 className="font-display text-xl font-bold text-white mb-3 mt-4 group-hover:text-[#d4af37] transition-colors duration-200">
-                    {story.title}
-                  </h3>
+                  <div className={`flex flex-col flex-grow ${viewMode === "grid" ? "p-6" : "w-full"}`}>
+                    <div className="flex items-center justify-between text-[11px] text-neutral-400 font-semibold mb-2">
+                      <span>{story.date}</span>
+                      <span>{story.readTime}</span>
+                    </div>
 
-                  {story.summary && story.summary.trim() !== "" && (
-                    <p className="text-neutral-400 text-xs md:text-sm leading-relaxed mb-6 font-sans flex-grow">
+                    <h3 className="font-display text-xl font-bold text-white mb-2 group-hover:text-[#d4af37] transition-colors duration-200">
+                      {story.title}
+                    </h3>
+
+                    <p className="text-neutral-400 text-xs sm:text-sm leading-relaxed mb-6 font-sans flex-grow line-clamp-3">
                       {story.summary}
                     </p>
-                  )}
 
-                  <div className="flex justify-end border-t border-neutral-900/80 pt-4 mt-auto">
-                    <button
-                      onClick={() => handleSelectStory(story)}
-                      className="inline-flex items-center gap-1 text-xs font-bold text-[#d4af37] hover:text-[#b8901c] transition-colors"
-                    >
-                      Read
-                      <ChevronRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
-                    </button>
+                    <div className="flex items-center justify-between border-t border-neutral-800/80 pt-4 mt-auto">
+                      <span className="text-[10px] uppercase tracking-wider font-bold text-[#d4af37]">
+                        Manga Chapter
+                      </span>
+                      <button
+                        onClick={() => handleSelectStory(story)}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#d4af37]/10 hover:bg-[#d4af37] text-[#d4af37] hover:text-black text-xs font-bold transition-all duration-200 cursor-pointer"
+                      >
+                        Read Story
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                 </article>
               ))}
@@ -422,14 +521,14 @@ export default function StoriesPage() {
         </div>
       </main>
 
-      {/* Story Reader Overlay Modal (Immersive Fullscreen) */}
+      {/* Story Reader Overlay Modal */}
       {selectedStory && (
         <div 
           ref={viewerRef}
           className="fixed inset-0 z-50 bg-black flex flex-col w-screen h-screen overflow-hidden animate-fade-in"
         >
-          {/* Top Bar Navigation & Info */}
-          <div className="absolute top-0 inset-x-0 h-20 bg-gradient-to-b from-black/85 via-black/55 to-transparent z-30 pointer-events-none flex items-center justify-between px-6 md:px-10">
+          {/* Top Bar Navigation */}
+          <div className="absolute top-0 inset-x-0 h-20 bg-gradient-to-b from-black/90 via-black/60 to-transparent z-30 pointer-events-none flex items-center justify-between px-6 md:px-10">
             <div className="flex items-center gap-4 pointer-events-auto">
               <button
                 onClick={() => {
@@ -438,36 +537,32 @@ export default function StoriesPage() {
                   }
                   setSelectedStory(null);
                 }}
-                className="p-2.5 rounded-full bg-neutral-900/60 hover:bg-neutral-800 text-neutral-400 hover:text-white border border-white/10 backdrop-blur-md transition-all cursor-pointer shadow-lg hover:scale-105 active:scale-95"
+                className="p-2.5 rounded-full bg-neutral-900/80 hover:bg-[#d4af37] text-neutral-300 hover:text-black border border-white/10 backdrop-blur-md transition-all cursor-pointer shadow-lg hover:scale-105 active:scale-95"
                 title="Back to Stories"
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <div className="flex flex-col text-left">
-                <span className="text-[10px] text-neutral-450 uppercase tracking-widest font-mono font-bold">Reading Story</span>
+                <span className="text-[10px] text-[#d4af37] uppercase tracking-widest font-mono font-bold">Interactive Manga Reader</span>
                 <h2 className="text-white font-display text-sm md:text-base font-bold tracking-wide leading-tight drop-shadow-md">
                   {selectedStory.title}
                 </h2>
               </div>
             </div>
 
-            {/* Middle Page Counter */}
-            <div className="hidden md:flex items-center gap-2 px-4 py-1.5 rounded-full bg-neutral-900/60 border border-white/10 text-neutral-300 text-xs font-semibold uppercase tracking-wider backdrop-blur-md pointer-events-auto">
+            <div className="hidden md:flex items-center gap-2 px-4 py-1.5 rounded-full bg-neutral-900/80 border border-[#d4af37]/30 text-[#d4af37] text-xs font-bold uppercase tracking-wider backdrop-blur-md pointer-events-auto">
               Page {activeImageIndex + 1} of {selectedStory.imageUrls?.length || 1}
             </div>
 
-            {/* Right Side Action Controls */}
             <div className="flex items-center gap-3 pointer-events-auto">
-              {/* Fullscreen Toggle Button */}
               <button
                 onClick={toggleFullscreen}
-                className="p-2.5 rounded-full bg-neutral-900/60 hover:bg-neutral-800 text-[#d4af37] hover:text-[#b8901c] border border-white/10 backdrop-blur-md transition-all cursor-pointer shadow-lg hover:scale-105 active:scale-95"
+                className="p-2.5 rounded-full bg-neutral-900/80 hover:bg-[#d4af37] text-[#d4af37] hover:text-black border border-white/10 backdrop-blur-md transition-all cursor-pointer shadow-lg hover:scale-105 active:scale-95"
                 title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
               >
                 {isFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
               </button>
 
-              {/* Close Button */}
               <button
                 onClick={() => {
                   if (document.fullscreenElement) {
@@ -475,29 +570,26 @@ export default function StoriesPage() {
                   }
                   setSelectedStory(null);
                 }}
-                className="p-2.5 rounded-full bg-neutral-900/60 hover:bg-neutral-800 text-neutral-400 hover:text-white border border-white/10 backdrop-blur-md transition-all cursor-pointer shadow-lg hover:scale-105 active:scale-95"
+                className="p-2.5 rounded-full bg-neutral-900/80 hover:bg-neutral-800 text-neutral-400 hover:text-white border border-white/10 backdrop-blur-md transition-all cursor-pointer shadow-lg hover:scale-105 active:scale-95"
                 aria-label="Close reader"
-                title="Close"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
           </div>
 
-          {/* Mobile Floating Page Counter */}
-          <div className="absolute top-24 left-1/2 -translate-x-1/2 z-30 md:hidden flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/60 border border-white/10 text-neutral-300 text-[10px] font-bold uppercase tracking-wider backdrop-blur-md pointer-events-none">
+          <div className="absolute top-24 left-1/2 -translate-x-1/2 z-30 md:hidden flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/80 border border-[#d4af37]/30 text-[#d4af37] text-[11px] font-bold uppercase tracking-wider backdrop-blur-md pointer-events-none">
             {activeImageIndex + 1} / {selectedStory.imageUrls?.length || 1}
           </div>
 
-          {/* Right Floating Dot Indicators */}
           {selectedStory.imageUrls && selectedStory.imageUrls.length > 1 && (
-            <div className="fixed right-6 top-1/2 -translate-y-1/2 z-40 hidden md:flex flex-col gap-3.5 bg-black/55 backdrop-blur-md px-3 py-5 rounded-full border border-white/10 shadow-2xl">
+            <div className="fixed right-6 top-1/2 -translate-y-1/2 z-40 hidden md:flex flex-col gap-3.5 bg-black/70 backdrop-blur-md px-3.5 py-6 rounded-full border border-white/10 shadow-2xl">
               {selectedStory.imageUrls.map((_, idx) => (
                 <button
                   key={idx}
                   onClick={() => changePage(idx)}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 cursor-pointer ${
-                    activeImageIndex === idx ? "bg-[#d4af37] scale-150 shadow-[0_0_10px_#d4af37]" : "bg-neutral-600 hover:bg-neutral-400 hover:scale-110"
+                  className={`w-2.5 h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
+                    activeImageIndex === idx ? "bg-[#d4af37] scale-150 shadow-[0_0_12px_#d4af37]" : "bg-neutral-600 hover:bg-neutral-400"
                   }`}
                   title={`Go to page ${idx + 1}`}
                 />
@@ -505,31 +597,29 @@ export default function StoriesPage() {
             </div>
           )}
 
-          {/* Floating navigation chevrons for mouse users */}
           {selectedStory.imageUrls && selectedStory.imageUrls.length > 1 && (
             <>
               {activeImageIndex > 0 && (
                 <button
                   onClick={() => changePage(activeImageIndex - 1)}
-                  className="absolute left-6 top-1/2 -translate-y-1/2 z-40 hidden md:block p-3 rounded-full bg-neutral-900/60 hover:bg-neutral-800 border border-white/10 text-white hover:text-[#d4af37] transition-all cursor-pointer shadow-lg hover:scale-105 active:scale-95 backdrop-blur-md"
+                  className="absolute left-6 top-1/2 -translate-y-1/2 z-40 hidden md:block p-3.5 rounded-full bg-neutral-900/80 hover:bg-[#d4af37] border border-white/10 text-white hover:text-black transition-all cursor-pointer shadow-lg hover:scale-105 active:scale-95 backdrop-blur-md"
                   title="Previous Page"
                 >
-                  <ChevronRight className="w-5 h-5 rotate-180" />
+                  <ChevronRight className="w-6 h-6 rotate-180" />
                 </button>
               )}
               {activeImageIndex < selectedStory.imageUrls.length - 1 && (
                 <button
                   onClick={() => changePage(activeImageIndex + 1)}
-                  className="absolute right-24 top-1/2 -translate-y-1/2 z-40 hidden md:block p-3 rounded-full bg-neutral-900/60 hover:bg-neutral-800 border border-white/10 text-white hover:text-[#d4af37] transition-all cursor-pointer shadow-lg hover:scale-105 active:scale-95 backdrop-blur-md"
+                  className="absolute right-24 top-1/2 -translate-y-1/2 z-40 hidden md:block p-3.5 rounded-full bg-neutral-900/80 hover:bg-[#d4af37] border border-white/10 text-white hover:text-black transition-all cursor-pointer shadow-lg hover:scale-105 active:scale-95 backdrop-blur-md"
                   title="Next Page"
                 >
-                  <ChevronRight className="w-5 h-5" />
+                  <ChevronRight className="w-6 h-6" />
                 </button>
               )}
             </>
           )}
 
-          {/* Slideshow container */}
           <div 
             onWheel={handleWheel}
             onTouchStart={handleTouchStart}
@@ -537,28 +627,33 @@ export default function StoriesPage() {
             className="w-full h-full bg-black relative flex items-center justify-center select-none overflow-hidden"
           >
             {selectedStory.imageUrls && selectedStory.imageUrls.length > 0 ? (
-              selectedStory.imageUrls.map((url, idx) => (
-                <div 
-                  key={url} 
-                  className={`absolute inset-0 w-full h-full flex items-center justify-center bg-black transition-all duration-700 ease-in-out ${
-                    activeImageIndex === idx 
-                      ? "opacity-100 z-10 pointer-events-auto scale-100" 
-                      : "opacity-0 z-0 pointer-events-none scale-95"
-                  }`}
-                >
-                  <StoryImage url={url} alt={`${selectedStory.title} page ${idx + 1}`} />
+              selectedStory.imageUrls.map((url, idx) => {
+                // Performance Optimization: Only render active slide and immediate adjacent slides (idx - 1, idx + 1)
+                const isNearActive = Math.abs(idx - activeImageIndex) <= 1;
+                if (!isNearActive) return null;
 
-                  {/* Elegant hint overlay on the first slide prompting user to scroll/swipe */}
-                  {idx === 0 && selectedStory.imageUrls!.length > 1 && (
-                    <div className="absolute bottom-10 left-1/2 -translate-x-1/2 text-center z-20 px-5 py-3 rounded-2xl bg-black/60 backdrop-blur-md border border-white/10 animate-fade-in pointer-events-none flex flex-col items-center gap-1">
-                      <p className="text-neutral-450 text-[10px] tracking-widest uppercase font-bold">
-                        Scroll or swipe to read
-                      </p>
-                      <ChevronDown className="w-4 h-4 text-[#d4af37] animate-bounce mt-1" />
-                    </div>
-                  )}
-                </div>
-              ))
+                return (
+                  <div 
+                    key={url} 
+                    className={`absolute inset-0 w-full h-full flex items-center justify-center bg-black transition-all duration-300 ease-out ${
+                      activeImageIndex === idx 
+                        ? "opacity-100 z-10 pointer-events-auto scale-100" 
+                        : "opacity-0 z-0 pointer-events-none scale-95"
+                    }`}
+                  >
+                    <StoryImage url={url} alt={`${selectedStory.title} page ${idx + 1}`} />
+
+                    {idx === 0 && selectedStory.imageUrls!.length > 1 && (
+                      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 text-center z-20 px-5 py-3 rounded-2xl bg-black/80 backdrop-blur-md border border-[#d4af37]/40 pointer-events-none flex flex-col items-center gap-1">
+                        <p className="text-[#d4af37] text-[10px] tracking-widest uppercase font-bold">
+                          Scroll or swipe to turn page
+                        </p>
+                        <ChevronDown className="w-4 h-4 text-[#d4af37] animate-bounce mt-1" />
+                      </div>
+                    )}
+                  </div>
+                );
+              })
             ) : (
               <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-black">
                 <StoryImage url={selectedStory.imageUrl} alt={selectedStory.title} />
@@ -568,13 +663,15 @@ export default function StoriesPage() {
         </div>
       )}
 
-      {/* Footer */}
-      <footer className="py-10 border-t border-neutral-900 text-center text-sm text-neutral-500 font-sans bg-neutral-950/40 mt-auto">
+      <footer className="py-10 border-t border-neutral-900 text-center text-sm text-neutral-500 font-sans bg-neutral-950 mt-auto">
         <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="font-display text-base font-bold text-white tracking-widest">NAMI<span className="text-[#d4af37]">ARTS</span></p>
           <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
             <Link href="/" className="hover:text-[#d4af37] transition-colors duration-200 text-neutral-450 hover:underline">
               Home
+            </Link>
+            <Link href="/#about" className="hover:text-[#d4af37] transition-colors duration-200 text-neutral-450 hover:underline">
+              About Us
             </Link>
             <Link href="/legal" className="hover:text-[#d4af37] transition-colors duration-200 text-neutral-450 hover:underline">
               Terms & Legal

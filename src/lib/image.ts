@@ -20,13 +20,6 @@ export function getPreviewImageUrl(url: string): string {
 
   // Only apply transformations to Cloudinary URLs
   if (url.includes("cloudinary.com") && url.includes("/image/upload/")) {
-    // Cloudinary transformation parameters:
-    // - w_800,h_800,c_limit: limit size to fit within an 800x800 bounding box
-    // - q_55: moderate quality compression to limit file fidelity
-    // - f_auto: serve in next-gen formats (webp/avif) automatically
-    // - l_text:Arial_70_bold:NamiArts: overlay the watermark text "NamiArts" in standard Arial font
-    // - co_rgb:ffffff,o_15: white text color with 15% opacity (subtle but un-removable)
-    // - fl_layer_apply: apply the watermark layer over the base image in a separate step (separated by /)
     const transform = "w_800,h_800,c_limit,q_55,f_auto/l_text:Arial_70_bold:NamiArts,co_rgb:ffffff,o_45/fl_layer_apply";
     
     return url.replace("/image/upload/", `/image/upload/${transform}/`);

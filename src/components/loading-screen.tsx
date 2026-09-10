@@ -1,97 +1,89 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Palette } from "lucide-react";
 
 export default function LoadingScreen() {
   const [visible, setVisible] = useState(true);
   const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
-    // Check if the loader has already been shown in the current browser session
-    const hasBeenShown = sessionStorage.getItem("namiarts_intro_shown");
-    
-    if (hasBeenShown === "true") {
-      Promise.resolve().then(() => setVisible(false));
-      return;
-    }
+    try {
+      if (typeof window !== "undefined") {
+        if ("scrollRestoration" in window.history) {
+          window.history.scrollRestoration = "manual";
+        }
+        window.scrollTo(0, 0);
+      }
 
-    // Disable body scrolling during the intro animation
-    document.body.style.overflow = "hidden";
+      let hasBeenShown: string | null = null;
+      try {
+        hasBeenShown = sessionStorage.getItem("namiarts_intro_shown");
+      } catch (e) {
+        console.warn("sessionStorage unavailable:", e);
+      }
+      
+      if (hasBeenShown === "true") {
+        setVisible(false);
+        return;
+      }
 
-    // Start fading out after 1.8 seconds
-    const fadeTimer = setTimeout(() => {
-      setFadeOut(true);
-    }, 1800);
+      if (typeof document !== "undefined" && document.body) {
+        document.body.style.overflow = "hidden";
+      }
 
-    // Completely remove the loader from DOM after 2.5 seconds
-    const removeTimer = setTimeout(() => {
+      // Smooth & fast timing (fade out after 700ms, hide after 1000ms)
+      const fadeTimer = setTimeout(() => {
+        setFadeOut(true);
+      }, 700);
+
+      const removeTimer = setTimeout(() => {
+        setVisible(false);
+        if (typeof document !== "undefined" && document.body) {
+          document.body.style.overflow = "";
+        }
+        try {
+          sessionStorage.setItem("namiarts_intro_shown", "true");
+        } catch (e) {
+          console.warn("sessionStorage setItem failed:", e);
+        }
+      }, 1000);
+
+      return () => {
+        clearTimeout(fadeTimer);
+        clearTimeout(removeTimer);
+        if (typeof document !== "undefined" && document.body) {
+          document.body.style.overflow = "";
+        }
+      };
+    } catch (err) {
+      console.error("LoadingScreen effect error:", err);
       setVisible(false);
-      document.body.style.overflow = "";
-      sessionStorage.setItem("namiarts_intro_shown", "true");
-    }, 2500);
-
-    return () => {
-      clearTimeout(fadeTimer);
-      clearTimeout(removeTimer);
-      document.body.style.overflow = "";
-    };
+    }
   }, []);
 
   if (!visible) return null;
 
-  const brandName = "NAMIARTS";
-
   return (
     <div
-      className={`fixed inset-0 z-[99999] bg-[#070707] flex flex-col items-center justify-center transition-all duration-700 ease-in-out ${
-        fadeOut ? "opacity-0 pointer-events-none scale-105" : "opacity-100"
+      className={`fixed inset-0 z-[99999] bg-[#070707] flex flex-col items-center justify-center transition-opacity duration-300 ease-out select-none ${
+        fadeOut ? "opacity-0 pointer-events-none" : "opacity-100"
       }`}
     >
-      {/* Immersive ambient glows */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#d4af37]/5 rounded-full blur-[160px] pointer-events-none" />
-      <div className="absolute top-1/3 left-1/3 w-[300px] h-[300px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none animate-pulse" />
-      
-      {/* Decorative Rotating Ring */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full border border-dashed border-[#d4af37]/10 animate-spin-slow pointer-events-none" />
+      {/* Soft Ambient Glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#d4af37]/10 rounded-full blur-[100px] pointer-events-none" />
 
-      {/* Main Container */}
-      <div className="relative flex flex-col items-center select-none animate-float-logo">
-        
-        {/* Glowing palette icon */}
-        <div className="mb-6 text-[#d4af37]/80 filter drop-shadow-[0_0_15px_rgba(214,175,55,0.4)] animate-pulse">
-          <Palette className="w-10 h-10" />
-        </div>
-
-        {/* Brand Name with Staggered Letter Animations */}
-        <h1 className="font-display text-4xl sm:text-6xl font-bold tracking-[0.25em] text-white flex items-center justify-center pl-[0.25em]">
-          {brandName.split("").map((letter, index) => (
-            <span
-              key={index}
-              className="animate-letter inline-block"
-              style={{
-                animationDelay: `${index * 0.12}s`,
-                textShadow: "0 0 20px rgba(255,255,255,0.1)",
-              }}
-            >
-              {letter}
-            </span>
-          ))}
+      <div className="relative flex flex-col items-center">
+        {/* Simple & Elegant Brand Logo Title */}
+        <h1 className="font-display text-4xl sm:text-5xl font-extrabold tracking-[0.25em] text-white pl-[0.25em]">
+          NAMI<span className="text-[#d4af37]">ARTS</span>
         </h1>
 
-        {/* Golden Underline Sweep */}
-        <div className="relative mt-5 w-48 sm:w-64 h-[1px]">
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#d4af37] to-transparent animate-line-sweep shadow-[0_0_8px_#d4af37]" />
+        {/* Minimal Smooth Loader Pulse */}
+        <div className="mt-6 flex items-center gap-1.5">
+          <div className="w-2 h-2 rounded-full bg-[#d4af37] animate-pulse" />
+          <div className="w-2 h-2 rounded-full bg-[#d4af37] animate-pulse [animation-delay:0.2s]" />
+          <div className="w-2 h-2 rounded-full bg-[#d4af37] animate-pulse [animation-delay:0.4s]" />
         </div>
-
-        {/* Subtitle / Loading Status */}
-        <p 
-          className="mt-8 text-[10px] sm:text-xs uppercase tracking-[0.3em] text-neutral-500 animate-fade-in pl-[0.3em]"
-          style={{ animationDelay: "1.0s", animationFillMode: "both" }}
-        >
-          Curating the Canvas
-        </p>
-
       </div>
     </div>
   );

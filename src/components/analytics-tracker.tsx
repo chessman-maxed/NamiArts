@@ -8,20 +8,26 @@ export default function AnalyticsTracker() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    // Check if visit has already been logged for this browser session to avoid duplicate counts
-    const hasVisited = sessionStorage.getItem("namiarts_visit_logged");
-    if (hasVisited === "true") return;
-
-    // Set visited key in session storage so it doesn't trigger again until tab/browser is closed
-    sessionStorage.setItem("namiarts_visit_logged", "true");
+    let hasVisited: string | null = null;
+    try {
+      hasVisited = sessionStorage.getItem("namiarts_visit_logged");
+      if (hasVisited === "true") return;
+      sessionStorage.setItem("namiarts_visit_logged", "true");
+    } catch (e) {
+      console.warn("Analytics sessionStorage access failed:", e);
+    }
 
     const trackVisitorVisit = async () => {
       try {
-        // Retrieve or generate a persistent visitor ID for unique visitor counting
-        let visitorId = localStorage.getItem("namiarts_visitor_id");
-        if (!visitorId) {
-          visitorId = "usr_" + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-          localStorage.setItem("namiarts_visitor_id", visitorId);
+        let visitorId: string | null = null;
+        try {
+          visitorId = localStorage.getItem("namiarts_visitor_id");
+          if (!visitorId) {
+            visitorId = "usr_" + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+            localStorage.setItem("namiarts_visitor_id", visitorId);
+          }
+        } catch (e) {
+          visitorId = "usr_guest_" + Math.random().toString(36).substring(2, 10);
         }
 
         // Get landing page path

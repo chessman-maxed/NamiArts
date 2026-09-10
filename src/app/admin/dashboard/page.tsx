@@ -32,13 +32,23 @@ import {
   BarChart3,
   Users,
   Search,
-  ShieldAlert
+  ShieldAlert,
+  Tag,
+  Clock,
+  Sparkles,
+  ToggleLeft,
+  ToggleRight,
+  Check
 } from "lucide-react";
+
+import { SchemeItem, DEFAULT_SCHEMES } from "@/lib/schemes";
 
 interface Artwork {
   id: string;
   title: string;
   price: string | number;
+  category?: string;
+  orientation?: "portrait" | "landscape";
   imageUrl: string;
   width?: number;
   height?: number;
@@ -47,12 +57,38 @@ interface Artwork {
   createdAt: any;
 }
 
+const CATEGORY_OPTIONS = [
+  { value: "motivational-quote", label: "1. Motivational Quote" },
+  { value: "general-quote", label: "2. General Quote" },
+  { value: "general-images", label: "3. General Images" },
+  { value: "glamorous-images", label: "4. Glamorous Images" },
+  { value: "bhakti", label: "5. Bhakti" },
+];
+
+const ORIENTATION_OPTIONS = [
+  { value: "portrait", label: "Portrait (Vertical 3:4)" },
+  { value: "landscape", label: "Landscape (Horizontal 16:9 / 4:3)" },
+];
+
+
+
 interface Story {
   id: string;
   title: string;
   content?: string;
   imageUrl: string;
   imageUrls?: string[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  createdAt: any;
+}
+
+interface ReferralPartnerData {
+  id: string;
+  fullName: string;
+  age: number | string;
+  city: string;
+  gender: string;
+  phoneNumber: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   createdAt: any;
 }
@@ -119,20 +155,26 @@ export default function AdminDashboard() {
   }, [user, loading, isAdmin, router]);
 
   // Tab State
-  const [activeTab, setActiveTab] = useState<"artworks" | "stories">("artworks");
+  const [activeTab, setActiveTab] = useState<"artworks" | "stories" | "schemes">("artworks");
 
   // Sidebar State
-  const [sidebarTab, setSidebarTab] = useState<"uploading" | "analytics">("uploading");
+  const [sidebarTab, setSidebarTab] = useState<"uploading" | "analytics" | "referrals">("uploading");
 
   // Visits Data States
   const [visits, setVisits] = useState<any[]>([]);
   const [fetchingVisits, setFetchingVisits] = useState(true);
+
+  // Referral Data States
+  const [referrals, setReferrals] = useState<ReferralPartnerData[]>([]);
+  const [fetchingReferrals, setFetchingReferrals] = useState(true);
 
   // Database Data States
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [fetchingArtworks, setFetchingArtworks] = useState(true);
   const [stories, setStories] = useState<Story[]>([]);
   const [fetchingStories, setFetchingStories] = useState(true);
+  const [schemes, setSchemes] = useState<SchemeItem[]>([]);
+  const [fetchingSchemes, setFetchingSchemes] = useState(true);
 
   // Search States
   const [adminSearchInput, setAdminSearchInput] = useState("");
@@ -157,9 +199,17 @@ export default function AdminDashboard() {
     return story.title.toLowerCase().includes(q);
   });
 
+  const filteredSchemes = schemes.filter((scheme) => {
+    const q = adminSearchQuery.toLowerCase().trim();
+    if (!q) return true;
+    return scheme.title.toLowerCase().includes(q) || scheme.discount.toLowerCase().includes(q);
+  });
+
   // Upload Artwork States
   const [title, setTitle] = useState("");
-  const [price, setPrice] = useState("");
+  const [price, setPrice] = useState("Inquire");
+  const [category, setCategory] = useState("motivational-quote");
+  const [orientation, setOrientation] = useState<"portrait" | "landscape">("portrait");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -172,10 +222,27 @@ export default function AdminDashboard() {
   const [storyProgress, setStoryProgress] = useState(0);
   const [storyError, setStoryError] = useState("");
 
+  // Upload Scheme States
+  const [schemeBadge, setSchemeBadge] = useState("Limited Time");
+  const [schemeTitle, setSchemeTitle] = useState("");
+  const [schemeDiscount, setSchemeDiscount] = useState("");
+  const [schemeDescription, setSchemeDescription] = useState("");
+  const [schemeValidity, setSchemeValidity] = useState("");
+  const [schemeDurationDays, setSchemeDurationDays] = useState("");
+  const [schemeCtaText, setSchemeCtaText] = useState("Explore Collection →");
+  const [schemeCtaLink, setSchemeCtaLink] = useState("/#collections");
+  const [schemeHighlight, setSchemeHighlight] = useState(false);
+  const [schemeActive, setSchemeActive] = useState(true);
+  const [schemeUploading, setSchemeUploading] = useState(false);
+  const [schemeError, setSchemeError] = useState("");
+
   // Edit Artwork States
   const [editingArtwork, setEditingArtwork] = useState<Artwork | null>(null);
   const [editTitle, setEditTitle] = useState("");
-  const [editPrice, setEditPrice] = useState("");
+  const [editPrice, setEditPrice] = useState("Inquire");
+  const [editCategory, setEditCategory] = useState("motivational-quote");
+  const [editOrientation, setEditOrientation] = useState<"portrait" | "landscape">("portrait");
+
   const [editImageFile, setEditImageFile] = useState<File | null>(null);
   const [editUploading, setEditUploading] = useState(false);
   const [editUploadProgress, setEditUploadProgress] = useState(0);
@@ -188,11 +255,27 @@ export default function AdminDashboard() {
   const [editStoryUploading, setEditStoryUploading] = useState(false);
   const [editStoryProgress, setEditStoryProgress] = useState(0);
 
+  // Edit Scheme States
+  const [editingScheme, setEditingScheme] = useState<SchemeItem | null>(null);
+  const [editSchemeBadge, setEditSchemeBadge] = useState("Limited Time");
+  const [editSchemeTitle, setEditSchemeTitle] = useState("");
+  const [editSchemeDiscount, setEditSchemeDiscount] = useState("");
+  const [editSchemeDescription, setEditSchemeDescription] = useState("");
+  const [editSchemeValidity, setEditSchemeValidity] = useState("");
+  const [editSchemeDurationDays, setEditSchemeDurationDays] = useState("");
+  const [editSchemeCtaText, setEditSchemeCtaText] = useState("Explore Collection →");
+  const [editSchemeCtaLink, setEditSchemeCtaLink] = useState("/#collections");
+  const [editSchemeHighlight, setEditSchemeHighlight] = useState(false);
+  const [editSchemeActive, setEditSchemeActive] = useState(true);
+  const [editSchemeUploading, setEditSchemeUploading] = useState(false);
+
   // Delete States
   const [deletingArtwork, setDeletingArtwork] = useState<Artwork | null>(null);
   const [deletingArtworkLoading, setDeletingArtworkLoading] = useState(false);
   const [deletingStory, setDeletingStory] = useState<Story | null>(null);
   const [deletingStoryLoading, setDeletingStoryLoading] = useState(false);
+  const [deletingScheme, setDeletingScheme] = useState<SchemeItem | null>(null);
+  const [deletingSchemeLoading, setDeletingSchemeLoading] = useState(false);
 
   // Listen to Artworks Collection
   useEffect(() => {
@@ -234,6 +317,210 @@ export default function AdminDashboard() {
     return () => unsubscribe();
   }, [user, isAdmin]);
 
+  // Listen to Schemes Collection
+  useEffect(() => {
+    if (!user || !isAdmin) return;
+
+    const q = query(collection(db, "schemes"), orderBy("createdAt", "desc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const schemeList: SchemeItem[] = [];
+      snapshot.forEach((doc) => {
+        schemeList.push({ id: doc.id, ...doc.data() } as SchemeItem);
+      });
+      setSchemes(schemeList);
+      setFetchingSchemes(false);
+    }, (error) => {
+      console.error("Error reading schemes:", error);
+      setFetchingSchemes(false);
+    });
+
+    return () => unsubscribe();
+  }, [user, isAdmin]);
+
+  // Listen to Referrals Collection
+  useEffect(() => {
+    if (!user || !isAdmin) return;
+
+    const q = query(collection(db, "referrals"), orderBy("createdAt", "desc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const refList: ReferralPartnerData[] = [];
+      snapshot.forEach((doc) => {
+        refList.push({ id: doc.id, ...doc.data() } as ReferralPartnerData);
+      });
+      setReferrals(refList);
+      setFetchingReferrals(false);
+    }, (error) => {
+      console.error("Error reading referrals:", error);
+      setFetchingReferrals(false);
+    });
+
+    return () => unsubscribe();
+  }, [user, isAdmin]);
+
+  // Handle Seed Default Schemes
+  const handleSeedDefaultSchemes = async () => {
+    try {
+      setFetchingSchemes(true);
+      for (const s of DEFAULT_SCHEMES) {
+        await addDoc(collection(db, "schemes"), {
+          badge: s.badge,
+          title: s.title,
+          discount: s.discount,
+          description: s.description,
+          validity: s.validity || "Active Offer",
+          ctaText: s.ctaText || "Explore →",
+          ctaLink: s.ctaLink || "/#collections",
+          highlight: s.highlight || false,
+          active: true,
+          expiresAt: null,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+      }
+    } catch (err) {
+      console.error("Seed schemes error:", err);
+      alert("Failed to seed default schemes.");
+    } finally {
+      setFetchingSchemes(false);
+    }
+  };
+
+  // Upload/Create Scheme Handler
+  const handleUploadScheme = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!schemeTitle || !schemeDiscount || !schemeDescription) {
+      setSchemeError("Title, Discount badge, and Description are required.");
+      return;
+    }
+
+    setSchemeError("");
+    setSchemeUploading(true);
+
+    try {
+      let expiresAt: string | null = null;
+      const daysNum = parseInt(schemeDurationDays, 10);
+      if (!isNaN(daysNum) && daysNum > 0) {
+        expiresAt = new Date(Date.now() + daysNum * 24 * 60 * 60 * 1000).toISOString();
+      }
+
+      await addDoc(collection(db, "schemes"), {
+        badge: schemeBadge || "Special Offer",
+        title: schemeTitle,
+        discount: schemeDiscount,
+        description: schemeDescription,
+        validity: schemeValidity || (daysNum ? `Valid for ${daysNum} Days` : "Active Offer"),
+        durationDays: daysNum || null,
+        expiresAt,
+        ctaText: schemeCtaText || "Explore Collection →",
+        ctaLink: schemeCtaLink || "/#collections",
+        highlight: schemeHighlight,
+        active: schemeActive,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+
+      // Reset
+      setSchemeBadge("Limited Time");
+      setSchemeTitle("");
+      setSchemeDiscount("");
+      setSchemeDescription("");
+      setSchemeValidity("");
+      setSchemeDurationDays("");
+      setSchemeCtaText("Explore Collection →");
+      setSchemeCtaLink("/#collections");
+      setSchemeHighlight(false);
+      setSchemeActive(true);
+      setSchemeUploading(false);
+    } catch (err: any) {
+      console.error("Create scheme error:", err);
+      setSchemeError(err.message || "Failed to create scheme.");
+      setSchemeUploading(false);
+    }
+  };
+
+  // Toggle Scheme Active State
+  const handleToggleSchemeActive = async (scheme: SchemeItem) => {
+    try {
+      const docRef = doc(db, "schemes", scheme.id);
+      await updateDoc(docRef, {
+        active: !scheme.active,
+        updatedAt: serverTimestamp(),
+      });
+    } catch (err) {
+      console.error("Failed to toggle scheme active status:", err);
+    }
+  };
+
+  // Open Edit Scheme Modal
+  const openEditSchemeModal = (scheme: SchemeItem) => {
+    setEditingScheme(scheme);
+    setEditSchemeBadge(scheme.badge || "Limited Time");
+    setEditSchemeTitle(scheme.title);
+    setEditSchemeDiscount(scheme.discount);
+    setEditSchemeDescription(scheme.description);
+    setEditSchemeValidity(scheme.validity || "");
+    setEditSchemeDurationDays(scheme.durationDays ? String(scheme.durationDays) : "");
+    setEditSchemeCtaText(scheme.ctaText || "Explore Collection →");
+    setEditSchemeCtaLink(scheme.ctaLink || "/#collections");
+    setEditSchemeHighlight(scheme.highlight || false);
+    setEditSchemeActive(scheme.active !== false);
+  };
+
+  // Save Edit Scheme
+  const handleSaveEditScheme = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingScheme) return;
+    setEditSchemeUploading(true);
+
+    try {
+      let expiresAt = editingScheme.expiresAt || null;
+      const daysNum = parseInt(editSchemeDurationDays, 10);
+      if (!isNaN(daysNum) && daysNum > 0) {
+        expiresAt = new Date(Date.now() + daysNum * 24 * 60 * 60 * 1000).toISOString();
+      } else if (editSchemeDurationDays === "0") {
+        expiresAt = null;
+      }
+
+      const docRef = doc(db, "schemes", editingScheme.id);
+      await updateDoc(docRef, {
+        badge: editSchemeBadge,
+        title: editSchemeTitle,
+        discount: editSchemeDiscount,
+        description: editSchemeDescription,
+        validity: editSchemeValidity || (daysNum ? `Valid for ${daysNum} Days` : "Active Offer"),
+        durationDays: daysNum || null,
+        expiresAt,
+        ctaText: editSchemeCtaText,
+        ctaLink: editSchemeCtaLink,
+        highlight: editSchemeHighlight,
+        active: editSchemeActive,
+        updatedAt: serverTimestamp(),
+      });
+
+      setEditingScheme(null);
+      setEditSchemeUploading(false);
+    } catch (err) {
+      console.error("Save edit scheme error:", err);
+      alert("Failed to update scheme.");
+      setEditSchemeUploading(false);
+    }
+  };
+
+  // Delete Scheme Handler
+  const handleDeleteScheme = async () => {
+    if (!deletingScheme) return;
+    setDeletingSchemeLoading(true);
+
+    try {
+      await deleteDoc(doc(db, "schemes", deletingScheme.id));
+      setDeletingScheme(null);
+    } catch (err) {
+      console.error("Delete scheme error:", err);
+    } finally {
+      setDeletingSchemeLoading(false);
+    }
+  };
+
   // Listen to Visits Collection
   useEffect(() => {
     if (!user || !isAdmin) return;
@@ -257,7 +544,17 @@ export default function AdminDashboard() {
   // Handle Image Selection
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setImageFile(e.target.files[0]);
+      const file = e.target.files[0];
+      setImageFile(file);
+      getImageDimensions(file)
+        .then(({ width, height }) => {
+          if (width > height) {
+            setOrientation("landscape");
+          } else {
+            setOrientation("portrait");
+          }
+        })
+        .catch((err) => console.error("Could not auto-detect image dimensions:", err));
     }
   };
 
@@ -270,9 +567,20 @@ export default function AdminDashboard() {
 
   const handleEditImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setEditImageFile(e.target.files[0]);
+      const file = e.target.files[0];
+      setEditImageFile(file);
+      getImageDimensions(file)
+        .then(({ width, height }) => {
+          if (width > height) {
+            setEditOrientation("landscape");
+          } else {
+            setEditOrientation("portrait");
+          }
+        })
+        .catch((err) => console.error("Could not auto-detect image dimensions:", err));
     }
   };
+
 
   const handleEditStoryFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -284,8 +592,8 @@ export default function AdminDashboard() {
   // Upload/Create Artwork
   const handleUploadArtwork = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !price || !imageFile) {
-      setUploadError("Title, price, and image file are required.");
+    if (!title || !imageFile) {
+      setUploadError("Title and image file are required.");
       return;
     }
 
@@ -305,7 +613,9 @@ export default function AdminDashboard() {
 
       await addDoc(collection(db, "artworks"), {
         title,
-        price: price.trim(),
+        price: "Inquire",
+        category: category,
+        orientation: orientation,
         imageUrl: artUrl,
         width: dims?.width || null,
         height: dims?.height || null,
@@ -316,7 +626,9 @@ export default function AdminDashboard() {
 
       // Reset form
       setTitle("");
-      setPrice("");
+      setPrice("Inquire");
+      setCategory("motivational-quote");
+      setOrientation("portrait");
       setImageFile(null);
       setUploading(false);
       setUploadProgress(0);
@@ -381,6 +693,8 @@ export default function AdminDashboard() {
     setEditingArtwork(artwork);
     setEditTitle(artwork.title);
     setEditPrice(String(artwork.price));
+    setEditCategory(artwork.category || "motivational-quote");
+    setEditOrientation(artwork.orientation || "portrait");
     setEditImageFile(null);
   };
 
@@ -439,9 +753,12 @@ export default function AdminDashboard() {
       const updateData: any = {
         title: editTitle,
         price: editPrice.trim(),
+        category: editCategory,
+        orientation: editOrientation,
         imageUrl: finalImageUrl,
         updatedAt: serverTimestamp(),
       };
+
 
       if (editImageFile && dims) {
         updateData.width = dims.width;
@@ -528,6 +845,64 @@ export default function AdminDashboard() {
     }
   };
 
+  // Bulk Delete All Artworks State & Handler
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+  const [bulkDeleteProgress, setBulkDeleteProgress] = useState({ current: 0, total: 0 });
+
+  const handleBulkDeleteAllArtworks = async () => {
+    if (artworks.length === 0) return;
+    if (!window.confirm(`WARNING: Are you absolutely sure you want to permanently delete ALL ${artworks.length} artworks? This action CANNOT be undone.`)) {
+      return;
+    }
+
+    setIsBulkDeleting(true);
+    setBulkDeleteProgress({ current: 0, total: artworks.length });
+
+    try {
+      let idToken = "";
+      if (user) {
+        idToken = await user.getIdToken();
+      }
+
+      for (let i = 0; i < artworks.length; i++) {
+        const art = artworks[i];
+        
+        // Delete image from Cloudinary
+        if (idToken && art.imageUrl) {
+          try {
+            await fetch("/api/delete-image", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${idToken}`,
+              },
+              body: JSON.stringify({ imageUrl: art.imageUrl }),
+            });
+          } catch (e) {
+            console.error(`Failed to delete Cloudinary image for artwork ${art.id}:`, e);
+          }
+        }
+
+        // Delete document from Firestore
+        try {
+          await deleteDoc(doc(db, "artworks", art.id));
+        } catch (e) {
+          console.error(`Failed to delete Firestore document for artwork ${art.id}:`, e);
+        }
+
+        setBulkDeleteProgress({ current: i + 1, total: artworks.length });
+      }
+
+      alert("All artworks have been deleted successfully.");
+    } catch (error) {
+      console.error("Bulk delete error:", error);
+      alert("An error occurred during bulk deletion.");
+    } finally {
+      setIsBulkDeleting(false);
+      setBulkDeleteProgress({ current: 0, total: 0 });
+    }
+  };
+
   // Confirm Delete Artwork
   const handleDeleteArtwork = async () => {
     if (!deletingArtwork) return;
@@ -554,6 +929,7 @@ export default function AdminDashboard() {
       setDeletingArtworkLoading(false);
     }
   };
+
 
   // Confirm Delete Story
   const handleDeleteStory = async () => {
@@ -753,6 +1129,25 @@ export default function AdminDashboard() {
             <BarChart3 className="w-4 h-4 shrink-0" />
             Analytics
           </button>
+
+          <button
+            onClick={() => setSidebarTab("referrals")}
+            className={`flex-1 lg:flex-initial w-full flex items-center justify-center lg:justify-start gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer relative ${
+              sidebarTab === "referrals"
+                ? "bg-[#d4af37] text-black shadow-[0_4px_12px_rgba(214,175,55,0.2)] font-extrabold"
+                : "text-neutral-400 hover:text-white hover:bg-neutral-900 border border-transparent"
+            }`}
+          >
+            <Users className="w-4 h-4 shrink-0" />
+            Referrals
+            {referrals.length > 0 && (
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ml-auto ${
+                sidebarTab === "referrals" ? "bg-black text-white" : "bg-[#d4af37]/20 text-[#d4af37]"
+              }`}>
+                {referrals.length}
+              </span>
+            )}
+          </button>
         </aside>
 
         {/* Right Content Panel */}
@@ -777,40 +1172,59 @@ export default function AdminDashboard() {
                   )}
 
                   <form onSubmit={handleUploadArtwork} className="flex flex-col gap-5">
-                    {/* Title */}
+                    {/* Title / Number */}
                     <div>
                       <label className="block text-xs uppercase tracking-wider text-neutral-400 font-bold mb-2">
-                        Artwork Title *
+                        Artwork Number *
                       </label>
                       <input
                         type="text"
                         required
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
-                        placeholder="Enter artwork title"
+                        placeholder="Enter artwork number (e.g. #001)"
                         className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#d4af37] transition-colors"
                       />
                     </div>
 
-                    {/* Price */}
+
+                    {/* Category Selection */}
                     <div>
                       <label className="block text-xs uppercase tracking-wider text-neutral-400 font-bold mb-2">
-                        Artwork Price (INR or Free/Sold text) *
+                        Art Collection Category *
                       </label>
-                      <div className="relative">
-                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-500 text-sm">
-                          <IndianRupee className="w-4 h-4 text-[#d4af37]" />
-                        </span>
-                        <input
-                          type="text"
-                          required
-                          value={price}
-                          onChange={(e) => setPrice(e.target.value)}
-                          placeholder="e.g. 15000, Sold, Inquire"
-                          className="w-full bg-neutral-900 border border-neutral-800 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#d4af37] transition-colors"
-                        />
-                      </div>
+                      <select
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value)}
+                        className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#d4af37] transition-colors cursor-pointer"
+                      >
+                        {CATEGORY_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
                     </div>
+
+                    {/* Image Orientation Selection */}
+                    <div>
+                      <label className="block text-xs uppercase tracking-wider text-neutral-400 font-bold mb-2">
+                        Image Orientation *
+                      </label>
+                      <select
+                        value={orientation}
+                        onChange={(e) => setOrientation(e.target.value as "portrait" | "landscape")}
+                        className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#d4af37] transition-colors cursor-pointer"
+                      >
+                        {ORIENTATION_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+
 
                     {/* Image Selection */}
                     <div>
@@ -963,16 +1377,188 @@ export default function AdminDashboard() {
                   </form>
                 </div>
 
+                {/* Panel 3: Create Promotional Scheme */}
+                <div className="bg-neutral-955 border border-neutral-900 rounded-2xl p-6 relative">
+                  <h2 className="font-display text-xl font-bold text-white mb-6 flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-[#d4af37]" />
+                    Create Promotional Scheme
+                  </h2>
+
+                  {schemeError && (
+                    <div className="mb-4 p-3 bg-red-955/20 border border-red-900/30 text-red-400 text-xs rounded-lg">
+                      {schemeError}
+                    </div>
+                  )}
+
+                  <form onSubmit={handleUploadScheme} className="flex flex-col gap-4">
+                    {/* Badge / Tag */}
+                    <div>
+                      <label className="block text-xs uppercase tracking-wider text-neutral-400 font-bold mb-1.5">
+                        Badge Tag *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={schemeBadge}
+                        onChange={(e) => setSchemeBadge(e.target.value)}
+                        placeholder="e.g. Limited Time, Popular Deal, Customization Bonus"
+                        className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-4 py-2 text-xs text-white focus:outline-none focus:border-[#d4af37]"
+                      />
+                    </div>
+
+                    {/* Title */}
+                    <div>
+                      <label className="block text-xs uppercase tracking-wider text-neutral-400 font-bold mb-1.5">
+                        Scheme Title *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={schemeTitle}
+                        onChange={(e) => setSchemeTitle(e.target.value)}
+                        placeholder="e.g. 20% OFF — Selected Photo Frames"
+                        className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-4 py-2 text-xs text-white focus:outline-none focus:border-[#d4af37]"
+                      />
+                    </div>
+
+                    {/* Discount Text */}
+                    <div>
+                      <label className="block text-xs uppercase tracking-wider text-neutral-400 font-bold mb-1.5">
+                        Discount Highlight *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={schemeDiscount}
+                        onChange={(e) => setSchemeDiscount(e.target.value)}
+                        placeholder="e.g. 20% OFF, BUY 2 GET 1"
+                        className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-4 py-2 text-xs text-white focus:outline-none focus:border-[#d4af37]"
+                      />
+                    </div>
+
+                    {/* Description */}
+                    <div>
+                      <label className="block text-xs uppercase tracking-wider text-neutral-400 font-bold mb-1.5">
+                        Description *
+                      </label>
+                      <textarea
+                        required
+                        rows={2}
+                        value={schemeDescription}
+                        onChange={(e) => setSchemeDescription(e.target.value)}
+                        placeholder="Describe the scheme offer details..."
+                        className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-4 py-2 text-xs text-white focus:outline-none focus:border-[#d4af37] resize-none"
+                      />
+                    </div>
+
+                    {/* Duration in Days / Expiration Timer */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs uppercase tracking-wider text-neutral-400 font-bold mb-1.5">
+                          Validity Text
+                        </label>
+                        <input
+                          type="text"
+                          value={schemeValidity}
+                          onChange={(e) => setSchemeValidity(e.target.value)}
+                          placeholder="e.g. Valid for 7 Days"
+                          className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#d4af37]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs uppercase tracking-wider text-neutral-400 font-bold mb-1.5">
+                          Timer (Days)
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="365"
+                          value={schemeDurationDays}
+                          onChange={(e) => setSchemeDurationDays(e.target.value)}
+                          placeholder="e.g. 7 (days)"
+                          className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#d4af37]"
+                        />
+                      </div>
+                    </div>
+
+                    {/* CTA Text & Link */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs uppercase tracking-wider text-neutral-400 font-bold mb-1.5">
+                          Button Text
+                        </label>
+                        <input
+                          type="text"
+                          value={schemeCtaText}
+                          onChange={(e) => setSchemeCtaText(e.target.value)}
+                          placeholder="Explore →"
+                          className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#d4af37]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs uppercase tracking-wider text-neutral-400 font-bold mb-1.5">
+                          Button Link
+                        </label>
+                        <input
+                          type="text"
+                          value={schemeCtaLink}
+                          onChange={(e) => setSchemeCtaLink(e.target.value)}
+                          placeholder="/#collections"
+                          className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#d4af37]"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Checkboxes: Highlight & Active */}
+                    <div className="flex items-center justify-between pt-1">
+                      <label className="flex items-center gap-2 text-xs text-neutral-300 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={schemeHighlight}
+                          onChange={(e) => setSchemeHighlight(e.target.checked)}
+                          className="rounded border-neutral-700 bg-neutral-900 text-[#d4af37] focus:ring-[#d4af37] cursor-pointer"
+                        />
+                        Highlight Card (Gold Glow)
+                      </label>
+                      <label className="flex items-center gap-2 text-xs text-neutral-300 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={schemeActive}
+                          onChange={(e) => setSchemeActive(e.target.checked)}
+                          className="rounded border-neutral-700 bg-neutral-900 text-[#d4af37] focus:ring-[#d4af37] cursor-pointer"
+                        />
+                        Active Scheme
+                      </label>
+                    </div>
+
+                    {/* Submit Button */}
+                    <button
+                      type="submit"
+                      disabled={schemeUploading}
+                      className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#d4af37] hover:bg-[#b8901c] text-black font-bold text-sm tracking-wide transition-colors disabled:opacity-50 cursor-pointer mt-2"
+                    >
+                      {schemeUploading ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Plus className="w-4 h-4" />
+                          Publish Scheme
+                        </>
+                      )}
+                    </button>
+                  </form>
+                </div>
+
               </section>
 
-              {/* Right Tabbed List Panel: Manage Artworks & Stories */}
+              {/* Right Tabbed List Panel: Manage Artworks, Stories & Schemes */}
               <section className="lg:col-span-7 bg-neutral-955 border border-neutral-900 rounded-2xl p-6 flex flex-col h-fit">
                 
                 {/* Tab Header Selector */}
-                <div className="flex border-b border-neutral-900 mb-6 gap-6">
+                <div className="flex border-b border-neutral-900 mb-6 gap-6 overflow-x-auto">
                   <button
                     onClick={() => setActiveTab("artworks")}
-                    className={`pb-4 text-sm font-bold uppercase tracking-wider relative transition-colors ${
+                    className={`pb-4 text-sm font-bold uppercase tracking-wider relative transition-colors whitespace-nowrap ${
                       activeTab === "artworks" ? "text-white" : "text-neutral-500 hover:text-neutral-300"
                     }`}
                   >
@@ -983,12 +1569,23 @@ export default function AdminDashboard() {
                   </button>
                   <button
                     onClick={() => setActiveTab("stories")}
-                    className={`pb-4 text-sm font-bold uppercase tracking-wider relative transition-colors ${
+                    className={`pb-4 text-sm font-bold uppercase tracking-wider relative transition-colors whitespace-nowrap ${
                       activeTab === "stories" ? "text-white" : "text-neutral-500 hover:text-neutral-300"
                     }`}
                   >
                     Stories ({stories.length})
                     {activeTab === "stories" && (
+                      <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[#d4af37] animate-fade-in" />
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("schemes")}
+                    className={`pb-4 text-sm font-bold uppercase tracking-wider relative transition-colors whitespace-nowrap ${
+                      activeTab === "schemes" ? "text-white" : "text-neutral-500 hover:text-neutral-300"
+                    }`}
+                  >
+                    Schemes ({schemes.length})
+                    {activeTab === "schemes" && (
                       <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[#d4af37] animate-fade-in" />
                     )}
                   </button>
@@ -1021,7 +1618,34 @@ export default function AdminDashboard() {
                 {/* TAB 1: Artworks Management */}
                 {activeTab === "artworks" && (
                   <div>
+                    {/* Header bar with Count and Delete All Button */}
+                    {artworks.length > 0 && (
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 p-3.5 rounded-xl bg-neutral-950 border border-neutral-900">
+                        <div className="text-xs text-neutral-400">
+                          Total items: <span className="font-bold text-white">{artworks.length}</span>
+                        </div>
+                        <button
+                          onClick={handleBulkDeleteAllArtworks}
+                          disabled={isBulkDeleting}
+                          className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-red-950/40 hover:bg-red-900/60 border border-red-800/60 text-red-300 hover:text-white font-bold text-xs transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {isBulkDeleting ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 animate-spin text-red-400" />
+                              <span>Deleting All ({bulkDeleteProgress.current}/{bulkDeleteProgress.total})</span>
+                            </>
+                          ) : (
+                            <>
+                              <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                              <span>Delete All {artworks.length} Artworks</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    )}
+
                     {fetchingArtworks ? (
+
                       <div className="flex flex-col items-center justify-center py-20 gap-3">
                         <Loader2 className="w-8 h-8 text-[#d4af37] animate-spin" />
                         <p className="text-neutral-500 text-sm">Syncing artworks with database...</p>
@@ -1054,10 +1678,11 @@ export default function AdminDashboard() {
                           <thead>
                             <tr className="border-b border-neutral-900 text-xs font-bold uppercase tracking-wider text-neutral-500">
                               <th className="pb-3 pl-2">Preview</th>
-                              <th className="pb-3">Title</th>
-                              <th className="pb-3">Price</th>
+                              <th className="pb-3">Number</th>
+                              <th className="pb-3">Category</th>
                               <th className="pb-3 text-right pr-2">Actions</th>
                             </tr>
+
                           </thead>
                           <tbody className="divide-y divide-neutral-900/50">
                             {filteredArtworks.map((art) => (
@@ -1074,12 +1699,11 @@ export default function AdminDashboard() {
                                 <td className="py-4 font-semibold text-white max-w-[100px] xs:max-w-[150px] md:max-w-xs truncate">
                                   {art.title}
                                 </td>
-                                <td className="py-4 font-mono font-bold text-[#d4af37]">
-                                  {typeof art.price === "number" || !isNaN(Number(art.price))
-                                    ? `₹${Number(art.price).toLocaleString()}`
-                                    : art.price}
+                                <td className="py-4 text-xs font-medium text-[#d4af37]">
+                                  {CATEGORY_OPTIONS.find((c) => c.value === art.category)?.label.split(". ")[1] || art.category || "Unclassified"}
                                 </td>
                                 <td className="py-4 text-right pr-2">
+
                                   <div className="inline-flex gap-2">
                                     <button
                                       onClick={() => openEditArtworkModal(art)}
@@ -1188,10 +1812,169 @@ export default function AdminDashboard() {
                   </div>
                 )}
 
+                {/* TAB 3: Schemes Management */}
+                {activeTab === "schemes" && (
+                  <div>
+                    {/* Header bar with Count and Seed Default Schemes Button */}
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 p-3.5 rounded-xl bg-neutral-950 border border-neutral-900">
+                      <div className="text-xs text-neutral-400">
+                        Total active schemes: <span className="font-bold text-white">{schemes.length}</span>
+                      </div>
+                      {schemes.length === 0 && (
+                        <button
+                          onClick={handleSeedDefaultSchemes}
+                          className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#d4af37]/15 hover:bg-[#d4af37]/25 border border-[#d4af37]/40 text-[#d4af37] font-bold text-xs transition-colors cursor-pointer"
+                        >
+                          <Sparkles className="w-3.5 h-3.5" />
+                          Seed Default Schemes
+                        </button>
+                      )}
+                    </div>
+
+                    {fetchingSchemes ? (
+                      <div className="flex flex-col items-center justify-center py-20 gap-3">
+                        <Loader2 className="w-8 h-8 text-[#d4af37] animate-spin" />
+                        <p className="text-neutral-500 text-sm">Syncing schemes with database...</p>
+                      </div>
+                    ) : schemes.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-24 text-center">
+                        <Tag className="w-12 h-12 text-neutral-700 mb-4" />
+                        <h3 className="font-display text-base font-bold text-white mb-1">No Schemes Found</h3>
+                        <p className="text-neutral-500 text-xs max-w-xs leading-relaxed mb-4">
+                          Create your first promotional scheme using the panel on the left, or click seed below.
+                        </p>
+                        <button
+                          onClick={handleSeedDefaultSchemes}
+                          className="px-4 py-2 rounded-xl bg-[#d4af37] text-black font-bold text-xs hover:bg-[#b8901c] transition-colors cursor-pointer"
+                        >
+                          Seed Initial Default Schemes
+                        </button>
+                      </div>
+                    ) : filteredSchemes.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-20 text-center">
+                        <ShieldAlert className="w-8 h-8 text-neutral-600 mb-3" />
+                        <h3 className="text-sm font-bold text-white mb-1">No Matches Found</h3>
+                        <p className="text-neutral-500 text-xs max-w-xs mb-4">
+                          No promotional schemes match your search query "{adminSearchQuery}".
+                        </p>
+                        <button
+                          onClick={() => setAdminSearchInput("")}
+                          className="px-4 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white font-semibold text-xs border border-neutral-800 hover:border-neutral-700 transition-colors cursor-pointer"
+                        >
+                          Clear Search
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-3">
+                        {filteredSchemes.map((scheme) => {
+                          const isExpired = scheme.expiresAt && new Date(scheme.expiresAt).getTime() <= Date.now();
+                          let remainingStr = null;
+                          if (scheme.expiresAt && !isExpired) {
+                            const diff = new Date(scheme.expiresAt).getTime() - Date.now();
+                            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                            remainingStr = `${days}d ${hours}h left`;
+                          }
+
+                          return (
+                            <div
+                              key={scheme.id}
+                              className={`p-4 rounded-xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all ${
+                                scheme.active && !isExpired
+                                  ? scheme.highlight
+                                    ? "bg-amber-500/10 border-[#d4af37]/50 shadow-[0_4px_15px_rgba(214,175,55,0.08)]"
+                                    : "bg-neutral-900/60 border-neutral-850"
+                                  : "bg-neutral-950/50 border-neutral-900 opacity-60"
+                              }`}
+                            >
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                                  <span className="px-2 py-0.5 rounded bg-[#d4af37]/15 border border-[#d4af37]/30 text-[10px] font-extrabold uppercase tracking-wider text-[#d4af37]">
+                                    {scheme.badge}
+                                  </span>
+                                  <span className="font-display text-xs font-black text-amber-400">
+                                    {scheme.discount}
+                                  </span>
+
+                                  {/* Expiration Status Badge */}
+                                  {isExpired ? (
+                                    <span className="px-2 py-0.5 rounded bg-red-955/40 border border-red-800/50 text-[10px] font-bold text-red-400 flex items-center gap-1">
+                                      <Clock className="w-3 h-3 text-red-400" />
+                                      Expired
+                                    </span>
+                                  ) : remainingStr ? (
+                                    <span className="px-2 py-0.5 rounded bg-amber-500/20 border border-amber-500/40 text-[10px] font-bold text-amber-300 flex items-center gap-1">
+                                      <Clock className="w-3 h-3 animate-pulse text-amber-400" />
+                                      {remainingStr}
+                                    </span>
+                                  ) : scheme.validity ? (
+                                    <span className="text-[10px] text-neutral-450 flex items-center gap-1">
+                                      <Clock className="w-3 h-3 text-neutral-500" />
+                                      {scheme.validity}
+                                    </span>
+                                  ) : null}
+                                </div>
+
+                                <h4 className="font-display text-sm font-bold text-white mb-1">
+                                  {scheme.title}
+                                </h4>
+                                <p className="text-xs text-neutral-400 line-clamp-2">
+                                  {scheme.description}
+                                </p>
+                              </div>
+
+                              {/* Actions & Active Toggle */}
+                              <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
+                                {/* Toggle Active Button */}
+                                <button
+                                  onClick={() => handleToggleSchemeActive(scheme)}
+                                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-colors cursor-pointer ${
+                                    scheme.active
+                                      ? "bg-green-950/30 border-green-800/60 text-green-400 hover:bg-green-900/40"
+                                      : "bg-neutral-900 border-neutral-800 text-neutral-500 hover:text-neutral-300"
+                                  }`}
+                                  title={scheme.active ? "Deactivate Scheme" : "Activate Scheme"}
+                                >
+                                  {scheme.active ? (
+                                    <>
+                                      <ToggleRight className="w-4 h-4 text-green-400" />
+                                      <span>Active</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <ToggleLeft className="w-4 h-4 text-neutral-500" />
+                                      <span>Disabled</span>
+                                    </>
+                                  )}
+                                </button>
+
+                                <button
+                                  onClick={() => openEditSchemeModal(scheme)}
+                                  className="p-2 rounded-lg hover:bg-neutral-850 text-neutral-400 hover:text-white transition-colors cursor-pointer"
+                                  title="Edit scheme"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => setDeletingScheme(scheme)}
+                                  className="p-2 rounded-lg hover:bg-red-955/20 text-neutral-400 hover:text-red-400 transition-colors cursor-pointer"
+                                  title="Delete scheme"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+
               </section>
 
             </div>
-          ) : (
+          ) : sidebarTab === "analytics" ? (
             
             /* Section 2: Analytics Dashboard */
             <div className="bg-neutral-955 border border-neutral-900 rounded-2xl p-6 flex flex-col w-full">
@@ -1468,7 +2251,83 @@ export default function AdminDashboard() {
                 </>
               )}
             </div>
+          ) : (
+            /* Section 3: Referrals View Panel */
+            <div className="bg-neutral-955 border border-neutral-900 rounded-2xl p-6 sm:p-8">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-6 border-b border-neutral-900">
+                <div>
+                  <h2 className="font-display text-2xl font-bold text-white flex items-center gap-2.5">
+                    <Users className="w-6 h-6 text-[#d4af37]" />
+                    Referral Partner Registrations
+                  </h2>
+                  <p className="text-neutral-400 text-xs mt-1">
+                    All partner registrations submitted via the Referral Program form.
+                  </p>
+                </div>
+                <div className="px-4 py-2 rounded-xl bg-neutral-900 border border-neutral-800 text-xs font-bold text-[#d4af37] flex items-center gap-2">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Total Registrations: {referrals.length}</span>
+                </div>
+              </div>
 
+              {fetchingReferrals ? (
+                <div className="py-16 text-center text-neutral-500 text-sm flex items-center justify-center gap-2">
+                  <Loader2 className="w-5 h-5 animate-spin text-[#d4af37]" />
+                  Loading referral registrations...
+                </div>
+              ) : referrals.length === 0 ? (
+                <div className="py-16 text-center text-neutral-500 text-sm space-y-2">
+                  <Users className="w-10 h-10 mx-auto text-neutral-700 mb-2" />
+                  <p className="font-semibold text-neutral-400">No referral registrations yet.</p>
+                  <p className="text-xs text-neutral-600">Submissions from the website /referral page will appear here automatically.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="border-b border-neutral-800 text-neutral-400 uppercase tracking-wider font-bold">
+                        <th className="py-3 px-3">Full Name</th>
+                        <th className="py-3 px-3">Phone Number</th>
+                        <th className="py-3 px-3">City</th>
+                        <th className="py-3 px-3">Age</th>
+                        <th className="py-3 px-3">Gender</th>
+                        <th className="py-3 px-3 text-right">Submitted At</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-neutral-900">
+                      {referrals.map((item) => {
+                        let dateStr = "Just Now";
+                        if (item.createdAt) {
+                          const dateObj = item.createdAt.toDate ? item.createdAt.toDate() : new Date(item.createdAt);
+                          dateStr = dateObj.toLocaleDateString("en-IN", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          });
+                        }
+
+                        return (
+                          <tr key={item.id} className="hover:bg-neutral-900/40 transition-colors">
+                            <td className="py-3.5 px-3 font-semibold text-white text-sm">{item.fullName}</td>
+                            <td className="py-3.5 px-3 font-mono text-[#d4af37] font-bold">
+                              <a href={`tel:${item.phoneNumber}`} className="hover:underline flex items-center gap-1.5">
+                                {item.phoneNumber}
+                              </a>
+                            </td>
+                            <td className="py-3.5 px-3 text-neutral-300 font-medium">{item.city}</td>
+                            <td className="py-3.5 px-3 text-neutral-300">{item.age}</td>
+                            <td className="py-3.5 px-3 text-neutral-400">{item.gender}</td>
+                            <td className="py-3.5 px-3 text-right text-neutral-500 font-mono text-[11px]">{dateStr}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </main>
@@ -1489,10 +2348,10 @@ export default function AdminDashboard() {
             </h3>
 
             <form onSubmit={handleSaveEditArtwork} className="flex flex-col gap-4">
-              {/* Title */}
+              {/* Title / Number */}
               <div>
                 <label className="block text-xs uppercase tracking-wider text-neutral-450 font-bold mb-2">
-                  Artwork Title
+                  Artwork Number *
                 </label>
                 <input
                   type="text"
@@ -1503,19 +2362,44 @@ export default function AdminDashboard() {
                 />
               </div>
 
-              {/* Price */}
+
+              {/* Category */}
               <div>
                 <label className="block text-xs uppercase tracking-wider text-neutral-450 font-bold mb-2">
-                  Artwork Price
+                  Art Collection Category *
                 </label>
-                <input
-                  type="text"
-                  required
-                  value={editPrice}
-                  onChange={(e) => setEditPrice(e.target.value)}
-                  className="w-full bg-neutral-855 border border-neutral-700 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#d4af37]"
-                />
+                <select
+                  value={editCategory}
+                  onChange={(e) => setEditCategory(e.target.value)}
+                  className="w-full bg-neutral-855 border border-neutral-700 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#d4af37] cursor-pointer"
+                >
+                  {CATEGORY_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
               </div>
+
+              {/* Image Orientation */}
+              <div>
+                <label className="block text-xs uppercase tracking-wider text-neutral-450 font-bold mb-2">
+                  Image Orientation *
+                </label>
+                <select
+                  value={editOrientation}
+                  onChange={(e) => setEditOrientation(e.target.value as "portrait" | "landscape")}
+                  className="w-full bg-neutral-855 border border-neutral-700 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#d4af37] cursor-pointer"
+                >
+                  {ORIENTATION_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+
 
               {/* Replace Image */}
               <div>
@@ -1773,6 +2657,221 @@ export default function AdminDashboard() {
                 className="w-1/2 flex items-center justify-center py-2.5 rounded-lg bg-red-650 hover:bg-red-700 text-white font-bold text-xs transition-colors disabled:opacity-50 cursor-pointer focus:outline-none"
               >
                 {deletingStoryLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  "Yes, Delete"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 5: Edit Scheme Modal */}
+      {editingScheme && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 z-50 animate-fade-in">
+          <div className="bg-neutral-900 border border-neutral-850 rounded-2xl max-w-md w-full p-6 relative shadow-2xl max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={() => setEditingScheme(null)}
+              className="absolute top-4 right-4 text-neutral-500 hover:text-white transition-colors focus:outline-none"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <h3 className="font-display text-lg font-bold text-white mb-6 flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-[#d4af37]" />
+              Edit Promotional Scheme
+            </h3>
+
+            <form onSubmit={handleSaveEditScheme} className="flex flex-col gap-4">
+              {/* Badge */}
+              <div>
+                <label className="block text-xs uppercase tracking-wider text-neutral-450 font-bold mb-1.5">
+                  Badge Tag *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editSchemeBadge}
+                  onChange={(e) => setEditSchemeBadge(e.target.value)}
+                  className="w-full bg-neutral-855 border border-neutral-700 rounded-lg px-4 py-2 text-xs text-white focus:outline-none focus:border-[#d4af37]"
+                />
+              </div>
+
+              {/* Title */}
+              <div>
+                <label className="block text-xs uppercase tracking-wider text-neutral-450 font-bold mb-1.5">
+                  Scheme Title *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editSchemeTitle}
+                  onChange={(e) => setEditSchemeTitle(e.target.value)}
+                  className="w-full bg-neutral-855 border border-neutral-700 rounded-lg px-4 py-2 text-xs text-white focus:outline-none focus:border-[#d4af37]"
+                />
+              </div>
+
+              {/* Discount Highlight */}
+              <div>
+                <label className="block text-xs uppercase tracking-wider text-neutral-450 font-bold mb-1.5">
+                  Discount Highlight *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editSchemeDiscount}
+                  onChange={(e) => setEditSchemeDiscount(e.target.value)}
+                  className="w-full bg-neutral-855 border border-neutral-700 rounded-lg px-4 py-2 text-xs text-white focus:outline-none focus:border-[#d4af37]"
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-xs uppercase tracking-wider text-neutral-450 font-bold mb-1.5">
+                  Description *
+                </label>
+                <textarea
+                  required
+                  rows={2}
+                  value={editSchemeDescription}
+                  onChange={(e) => setEditSchemeDescription(e.target.value)}
+                  className="w-full bg-neutral-855 border border-neutral-700 rounded-lg px-4 py-2 text-xs text-white focus:outline-none focus:border-[#d4af37] resize-none"
+                />
+              </div>
+
+              {/* Validity & Timer Days */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs uppercase tracking-wider text-neutral-450 font-bold mb-1.5">
+                    Validity Text
+                  </label>
+                  <input
+                    type="text"
+                    value={editSchemeValidity}
+                    onChange={(e) => setEditSchemeValidity(e.target.value)}
+                    className="w-full bg-neutral-855 border border-neutral-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#d4af37]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs uppercase tracking-wider text-neutral-450 font-bold mb-1.5">
+                    Reset Timer (Days)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="365"
+                    value={editSchemeDurationDays}
+                    onChange={(e) => setEditSchemeDurationDays(e.target.value)}
+                    placeholder="Enter days (0 to clear)"
+                    className="w-full bg-neutral-855 border border-neutral-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#d4af37]"
+                  />
+                </div>
+              </div>
+
+              {/* CTA Text & Link */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs uppercase tracking-wider text-neutral-450 font-bold mb-1.5">
+                    Button Text
+                  </label>
+                  <input
+                    type="text"
+                    value={editSchemeCtaText}
+                    onChange={(e) => setEditSchemeCtaText(e.target.value)}
+                    className="w-full bg-neutral-855 border border-neutral-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#d4af37]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs uppercase tracking-wider text-neutral-450 font-bold mb-1.5">
+                    Button Link
+                  </label>
+                  <input
+                    type="text"
+                    value={editSchemeCtaLink}
+                    onChange={(e) => setEditSchemeCtaLink(e.target.value)}
+                    className="w-full bg-neutral-855 border border-neutral-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#d4af37]"
+                  />
+                </div>
+              </div>
+
+              {/* Checkboxes: Highlight & Active */}
+              <div className="flex items-center justify-between pt-1">
+                <label className="flex items-center gap-2 text-xs text-neutral-300 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={editSchemeHighlight}
+                    onChange={(e) => setEditSchemeHighlight(e.target.checked)}
+                    className="rounded border-neutral-700 bg-neutral-900 text-[#d4af37] focus:ring-[#d4af37] cursor-pointer"
+                  />
+                  Highlight Card (Gold Glow)
+                </label>
+                <label className="flex items-center gap-2 text-xs text-neutral-300 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={editSchemeActive}
+                    onChange={(e) => setEditSchemeActive(e.target.checked)}
+                    className="rounded border-neutral-700 bg-neutral-900 text-[#d4af37] focus:ring-[#d4af37] cursor-pointer"
+                  />
+                  Active Scheme
+                </label>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-4 mt-4">
+                <button
+                  type="button"
+                  onClick={() => setEditingScheme(null)}
+                  className="w-1/2 py-2.5 rounded-lg border border-neutral-700 hover:bg-neutral-800 text-white font-semibold text-xs transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={editSchemeUploading}
+                  className="w-1/2 flex items-center justify-center gap-1 py-2.5 rounded-lg bg-[#d4af37] hover:bg-[#b8901c] text-black font-bold text-xs transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  {editSchemeUploading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    "Save Changes"
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 6: Delete Scheme Modal */}
+      {deletingScheme && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 z-50">
+          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="w-12 h-12 bg-red-955/20 border border-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Trash2 className="w-5 h-5 text-red-500" />
+            </div>
+
+            <h3 className="font-display text-lg font-bold text-white mb-2">
+              Delete Scheme?
+            </h3>
+            <p className="text-neutral-400 text-xs mb-6 leading-relaxed">
+              Are you sure you want to delete <strong>&quot;{deletingScheme.title}&quot;</strong>? This will remove the promotional offer from the store.
+            </p>
+
+            <div className="flex gap-4">
+              <button
+                disabled={deletingSchemeLoading}
+                onClick={() => setDeletingScheme(null)}
+                className="w-1/2 py-2.5 rounded-lg border border-neutral-750 hover:bg-neutral-800 text-white font-semibold text-xs transition-colors focus:outline-none"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={deletingSchemeLoading}
+                onClick={handleDeleteScheme}
+                className="w-1/2 flex items-center justify-center py-2.5 rounded-lg bg-red-650 hover:bg-red-700 text-white font-bold text-xs transition-colors disabled:opacity-50 cursor-pointer focus:outline-none"
+              >
+                {deletingSchemeLoading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
                   "Yes, Delete"

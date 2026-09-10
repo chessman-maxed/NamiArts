@@ -9,7 +9,15 @@ service cloud.firestore {
       allow read: if true;
       allow write: if request.auth != null && request.auth.token.email == 'nameearts@gmail.com';
     }
+    match /schemes/{schemeId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.token.email == 'nameearts@gmail.com';
+    }
     match /visits/{visitId} {
+      allow create: if true;
+      allow read, update, delete: if request.auth != null && request.auth.token.email == 'nameearts@gmail.com';
+    }
+    match /referrals/{referralId} {
       allow create: if true;
       allow read, update, delete: if request.auth != null && request.auth.token.email == 'nameearts@gmail.com';
     }
