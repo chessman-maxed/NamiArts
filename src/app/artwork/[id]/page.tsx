@@ -202,7 +202,7 @@ export default function ArtworkDetails() {
               <div className="bg-neutral-900/40 border border-neutral-800 rounded-2xl p-6 backdrop-blur-sm">
                 <h3 className="font-display text-lg font-bold text-white mb-2">Order Custom Photo Frame</h3>
                 <p className="text-neutral-400 text-sm mb-4 leading-relaxed">
-                  Love this artwork? Get it crafted into a physical photo frame. Click below to inquire via WhatsApp or Email to select your frame type, colour finish, and delivery location.
+                  Love this artwork? Get it crafted into a physical photo frame. Click below to select your frame type, colour finish, and order via WhatsApp.
                 </p>
 
                 {/* Customization Callout */}

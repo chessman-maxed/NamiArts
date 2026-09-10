@@ -158,7 +158,7 @@ export default function ReferralPage() {
                 Share & Earn
               </h3>
               <p className="text-neutral-400 text-sm leading-relaxed">
-                Share your referral code with friends, family, or other customers interested in NamiArts artworks/photo frames. When someone purchases: <span className="text-white font-semibold">Customer gets 10% OFF</span> & <span className="text-[#d4af37] font-semibold">You receive 10% of profit</span>.
+                Share your referral code with friends, family, or other customers interested in NamiArts artworks/photo frames. When someone purchases: <span className="text-white font-semibold">Customer gets 10% OFF</span> <span className="text-[#d4af37] font-bold">&</span> <span className="text-white font-semibold">You receive 10% on total purchase (excluding courier/shipment) through your referral code.</span>
               </p>
             </div>
           </div>
@@ -188,7 +188,7 @@ export default function ReferralPage() {
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="w-5 h-5 text-[#d4af37] shrink-0 mt-0.5" />
                     <div>
-                      <strong className="text-white">Referral Partner Benefit:</strong> 10% of the profit generated from the referred customer's order.
+                      <strong className="text-white">Referral Partner Benefit:</strong> 10% on total purchase(excluding courier/shipment charges) through your referral code.
                     </div>
                   </div>
                 </div>
@@ -200,12 +200,9 @@ export default function ReferralPage() {
                   <TrendingUp className="w-4 h-4" />
                   Earnings Example
                 </div>
-                <p className="text-neutral-300 text-sm mb-4">
-                  Earnings are calculated strictly based on order profit margin:
-                </p>
                 <div className="bg-neutral-900/80 p-4 rounded-xl border border-neutral-800 space-y-2 font-mono text-sm">
                   <div className="flex justify-between text-neutral-400">
-                    <span>Order Profit:</span>
+                    <span>Total Order Value:</span>
                     <span className="text-white font-semibold">₹500</span>
                   </div>
                   <div className="flex justify-between text-[#d4af37] pt-2 border-t border-neutral-800">
@@ -213,9 +210,6 @@ export default function ReferralPage() {
                     <span className="font-bold">₹50</span>
                   </div>
                 </div>
-                <p className="text-xs text-neutral-500 mt-3">
-                  * Note: Partner payout is 10% of profit, not total order value.
-                </p>
               </div>
             </div>
           </div>

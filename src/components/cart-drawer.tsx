@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { ShoppingBag, X, Plus, Minus, Trash2, ShieldCheck, MessageSquare, Mail, Edit2, Check } from "lucide-react";
+import { ShoppingBag, X, Plus, Minus, Trash2, ShieldCheck, MessageSquare, Edit2, Check } from "lucide-react";
 import { useCart, FrameSize, FrameColor } from "@/context/cart-context";
 import { getPreviewImageUrl } from "@/lib/image";
 
@@ -26,7 +26,6 @@ export const CartDrawer: React.FC = () => {
   if (!isCartOpen) return null;
 
   const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "919699338301";
-  const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "nameearts@gmail.com";
 
   const itemLines = cart.map((item) => {
     const title = item.title || "Artwork";
@@ -48,11 +47,6 @@ export const CartDrawer: React.FC = () => {
   ].join("\n");
 
   const whatsappMessage = encodeURIComponent(rawMessage);
-
-  const emailSubject = encodeURIComponent(`Cart Order Inquiry (${totalItems} physical photo frame${totalItems > 1 ? "s" : ""}) - NamiArts`);
-  const emailBody = encodeURIComponent(
-    `Hello NamiArts,\n\nI would like to inquire about ordering physical photo frames for the following items in my shopping cart:\n\n${itemLines.join("\n\n")}\n\n-------------------\nProducts Subtotal: INR ${itemsSubtotal.toLocaleString()}\nDelivery Charge: INR ${deliveryCharge}\nGrand Total: INR ${totalPrice.toLocaleString()}\n\nPlease let me know the estimated delivery timeframe and payment instructions.\n\nThank you!`
-  );
 
   return (
     <div className="fixed inset-0 z-[100] flex justify-end">
@@ -350,27 +344,6 @@ export const CartDrawer: React.FC = () => {
                 >
                   <MessageSquare className="w-4 h-4 text-white/20" />
                   Order Cart via WhatsApp
-                </button>
-              )}
-
-              {agreed ? (
-                <a
-                  href={`https://mail.google.com/mail/?view=cm&fs=1&to=${contactEmail}&su=${emailSubject}&body=${emailBody}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-neutral-800 hover:bg-neutral-750 text-white font-semibold text-xs border border-neutral-700 transition-colors"
-                >
-                  <Mail className="w-4 h-4 text-[#d4af37]" />
-                  Inquire via Email
-                </a>
-              ) : (
-                <button
-                  disabled
-                  className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-neutral-800/20 text-neutral-600 font-semibold text-xs border border-neutral-850 cursor-not-allowed"
-                  title="Please agree to Terms & Conditions first"
-                >
-                  <Mail className="w-4 h-4 text-neutral-600" />
-                  Inquire via Email
                 </button>
               )}
             </div>
