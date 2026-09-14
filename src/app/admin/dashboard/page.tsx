@@ -59,8 +59,8 @@ interface Artwork {
 
 const CATEGORY_OPTIONS = [
   { value: "motivational-quote", label: "1. Motivational Quote" },
-  { value: "general-quote", label: "2. General Quote" },
-  { value: "bhakti", label: "3. Bhakti" },
+  { value: "bhakti", label: "2. Bhakti" },
+  { value: "general-quote", label: "3. General Quote" },
   { value: "general-images", label: "4. General Images" },
   { value: "glamorous-images", label: "5. Glamorous Images" },
 ];
