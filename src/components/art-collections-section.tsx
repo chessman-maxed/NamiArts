@@ -65,19 +65,22 @@ export default function ArtCollectionsSection({ artworks = [] }: ArtCollectionsS
     return () => unsubscribe();
   }, []);
 
-  // Helper to get matching real artworks for a given category
-  const getCategoryArtworks = (cat: CategoryItem) => {
+  // Helper to get all matching real artworks for a given category
+  const getAllCategoryArtworks = (cat: CategoryItem) => {
     if (!artworks || artworks.length === 0) {
       return [];
     }
 
-    // Find matching real artworks from Firestore props by category field or title
-    const matching = artworks.filter((art) => {
+    return artworks.filter((art) => {
       if (!art.category) return false;
       const c = art.category.toLowerCase();
       return c.includes(cat.id) || c.includes(cat.slug) || cat.title.toLowerCase().includes(c);
     });
+  };
 
+  // Helper to get sliced matching real artworks for preview grid
+  const getCategoryArtworks = (cat: CategoryItem) => {
+    const matching = getAllCategoryArtworks(cat);
     return matching.slice(0, 4).map((art) => {
       let derivedOrientation = art.orientation;
       if (!derivedOrientation && art.width && art.height) {
@@ -134,9 +137,21 @@ export default function ArtCollectionsSection({ artworks = [] }: ArtCollectionsS
                           <cat.icon className="w-6 h-6" />
                         </div>
                         <div>
-                          <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#1A1A1A]">
-                            {cat.number}. {cat.title}
-                          </h3>
+                          <div className="flex items-center gap-2.5 flex-wrap">
+                            <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#1A1A1A]">
+                              {cat.number}. {cat.title}
+                            </h3>
+                            <span
+                              className="px-2.5 py-0.5 rounded-full text-xs font-semibold border shadow-xs"
+                              style={{
+                                backgroundColor: `${cat.accentColor}15`,
+                                color: cat.accentColor,
+                                borderColor: `${cat.accentColor}30`,
+                              }}
+                            >
+                              {stories.length} {stories.length === 1 ? "Story" : "Stories"}
+                            </span>
+                          </div>
                           <p className="text-xs sm:text-sm text-[#555555] font-sans mt-0.5">
                             {cat.description}
                           </p>
@@ -151,7 +166,7 @@ export default function ArtCollectionsSection({ artworks = [] }: ArtCollectionsS
                         }}
                         className="hidden sm:inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full border bg-white hover:bg-neutral-50 text-xs sm:text-sm font-semibold tracking-wide transition-all duration-300 shadow-sm hover:shadow transform hover:-translate-y-0.5"
                       >
-                        View All Stories
+                        View All Stories ({stories.length})
                         <ArrowRight className="w-4 h-4" />
                       </Link>
                     </div>
@@ -244,6 +259,7 @@ export default function ArtCollectionsSection({ artworks = [] }: ArtCollectionsS
 
             // Normal Category Horizontal Row
             const categoryArtworks = getCategoryArtworks(cat);
+            const totalCount = getAllCategoryArtworks(cat).length;
 
             return (
               <AnimatedSection key={cat.id} direction="up" delay={0.05}>
@@ -259,9 +275,21 @@ export default function ArtCollectionsSection({ artworks = [] }: ArtCollectionsS
                   </div>
 
                   <div>
-                    <h3 className="font-serif text-lg sm:text-xl font-bold text-[#1A1A1A]">
-                      {cat.number}. {cat.title}
-                    </h3>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-serif text-lg sm:text-xl font-bold text-[#1A1A1A]">
+                        {cat.number}. {cat.title}
+                      </h3>
+                      <span
+                        className="px-2.5 py-0.5 rounded-full text-xs font-semibold border shadow-xs"
+                        style={{
+                          backgroundColor: `${cat.accentColor}15`,
+                          color: cat.accentColor,
+                          borderColor: `${cat.accentColor}30`,
+                        }}
+                      >
+                        {totalCount} {totalCount === 1 ? "Artwork" : "Artworks"}
+                      </span>
+                    </div>
                     <p className="text-xs sm:text-sm text-[#555555] font-sans mt-1 leading-snug">
                       {cat.description.includes("(") ? (
                         <>
@@ -325,7 +353,7 @@ export default function ArtCollectionsSection({ artworks = [] }: ArtCollectionsS
                     }}
                     className="w-full lg:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full border bg-white hover:bg-neutral-50 text-xs sm:text-sm font-semibold tracking-wide transition-all duration-300 shadow-sm hover:shadow transform hover:-translate-y-0.5"
                   >
-                    View All
+                    View All ({totalCount})
                     <ArrowRight className="w-4 h-4" />
                   </Link>
                 </div>

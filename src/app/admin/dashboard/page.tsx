@@ -60,9 +60,9 @@ interface Artwork {
 const CATEGORY_OPTIONS = [
   { value: "motivational-quote", label: "1. Motivational Quote" },
   { value: "general-quote", label: "2. General Quote" },
-  { value: "general-images", label: "3. General Images" },
-  { value: "glamorous-images", label: "4. Glamorous Images" },
-  { value: "bhakti", label: "5. Bhakti" },
+  { value: "bhakti", label: "3. Bhakti" },
+  { value: "general-images", label: "4. General Images" },
+  { value: "glamorous-images", label: "5. Glamorous Images" },
 ];
 
 const ORIENTATION_OPTIONS = [

@@ -132,6 +132,35 @@ function ArtworkGalleryContent() {
   };
 
 
+  // Calculate total artworks for each category pill & badge
+  const getCategoryCount = (catIdOrSlug: string) => {
+    if (catIdOrSlug === "all") {
+      let total = artworks.length;
+      for (const cat of ART_CATEGORIES) {
+        for (const sample of cat.sampleArtworks) {
+          if (!artworks.some((item) => item.id === sample.id)) {
+            total++;
+          }
+        }
+      }
+      return total;
+    }
+    const catObj = ART_CATEGORIES.find((c) => c.slug === catIdOrSlug || c.id === catIdOrSlug);
+    if (!catObj) return 0;
+    const dbMatching = artworks.filter((art) => {
+      if (!art.category) return false;
+      const c = art.category.toLowerCase();
+      return c.includes(catObj.id) || c.includes(catObj.slug) || catObj.title.toLowerCase().includes(c);
+    });
+    let count = dbMatching.length;
+    for (const sample of catObj.sampleArtworks) {
+      if (!dbMatching.some((item) => item.id === sample.id)) {
+        count++;
+      }
+    }
+    return count;
+  };
+
   const displayList = getCategoryArtworks();
 
   return (
@@ -152,9 +181,14 @@ function ArtworkGalleryContent() {
 
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-neutral-900">
             <div>
-              <span className="text-xs uppercase tracking-widest text-[#d4af37] font-bold block mb-2">
-                {currentCategory ? `Category ${currentCategory.number}` : "Full Collection"}
-              </span>
+              <div className="flex items-center gap-3 flex-wrap mb-2">
+                <span className="text-xs uppercase tracking-widest text-[#d4af37] font-bold block">
+                  {currentCategory ? `Category ${currentCategory.number}` : "Full Collection"}
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#d4af37]/20 text-[#d4af37] border border-[#d4af37]/40 shadow-xs">
+                  {displayList.length} {displayList.length === 1 ? "Artwork" : "Artworks"} {searchQuery ? "Found" : "Available"}
+                </span>
+              </div>
               <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-wide">
                 {currentCategory ? currentCategory.title : "All Art Collections"}
               </h1>
@@ -195,21 +229,25 @@ function ArtworkGalleryContent() {
                 : "bg-neutral-900 border border-neutral-800 text-neutral-300 hover:border-neutral-700"
             }`}
           >
-            All Collections
+            All Collections ({getCategoryCount("all")})
           </button>
-          {ART_CATEGORIES.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setSelectedCategorySlug(cat.slug)}
-              className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wide transition-all shrink-0 cursor-pointer ${
-                selectedCategorySlug === cat.slug || selectedCategorySlug === cat.id
-                  ? "bg-[#d4af37] text-black font-bold shadow-lg"
-                  : "bg-neutral-900 border border-neutral-800 text-neutral-300 hover:border-neutral-700"
-              }`}
-            >
-              {cat.title}
-            </button>
-          ))}
+          {ART_CATEGORIES.map((cat) => {
+            const count = getCategoryCount(cat.id);
+            const isSelected = selectedCategorySlug === cat.slug || selectedCategorySlug === cat.id;
+            return (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedCategorySlug(cat.slug)}
+                className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wide transition-all shrink-0 cursor-pointer ${
+                  isSelected
+                    ? "bg-[#d4af37] text-black font-bold shadow-lg"
+                    : "bg-neutral-900 border border-neutral-800 text-neutral-300 hover:border-neutral-700"
+                }`}
+              >
+                {cat.title} ({count})
+              </button>
+            );
+          })}
         </div>
 
         {/* Artworks Display Grid */}
