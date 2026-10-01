@@ -46,7 +46,7 @@ export const Navbar = () => {
             {/* Logo */}
             <Link href="/" className="relative flex items-end gap-1.5 group focus:outline-none py-1 select-none">
               {/* Artistic Signature Logo */}
-              <span className={`${signature.className} text-3xl text-neutral-100 group-hover:text-white transition-colors duration-300 pb-0.5`}>
+              <span className={`${signature.className} text-3xl text-neutral-900 group-hover:text-neutral-700 transition-colors duration-300 pb-0.5`}>
                 Nami
               </span>
               <span className="font-display text-xs tracking-[0.25em] font-extrabold text-[#d4af37] pb-1">
@@ -99,29 +99,29 @@ export const Navbar = () => {
             <div className="relative group flex items-center gap-1 cursor-pointer py-1">
               <Link
                 href="/#collections"
-                className="text-sm font-medium tracking-wide text-neutral-300 hover:text-white transition-colors"
+                className="text-sm font-medium tracking-wide text-neutral-900 hover:text-[#c39e2e] transition-colors"
               >
                 Artworks
               </Link>
-              <svg className="w-3.5 h-3.5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3.5 h-3.5 text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </div>
             <Link
               href="/stories"
-              className="text-sm font-medium tracking-wide text-neutral-300 hover:text-white transition-colors relative group py-1"
+              className="text-sm font-medium tracking-wide text-neutral-900 hover:text-[#c39e2e] transition-colors relative group py-1"
             >
               Stories
             </Link>
             <Link
               href="/#about"
-              className="text-sm font-medium tracking-wide text-neutral-300 hover:text-white transition-colors relative group py-1"
+              className="text-sm font-medium tracking-wide text-neutral-900 hover:text-[#c39e2e] transition-colors relative group py-1"
             >
               About Us
             </Link>
             <Link
               href="/#contact"
-              className="text-sm font-medium tracking-wide text-neutral-300 hover:text-white transition-colors relative group py-1"
+              className="text-sm font-medium tracking-wide text-neutral-900 hover:text-[#c39e2e] transition-colors relative group py-1"
             >
               Contact
             </Link>
@@ -140,7 +140,7 @@ export const Navbar = () => {
               href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "919699338301"}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden sm:flex w-9 h-9 rounded-full border border-neutral-700/70 hover:border-[#25D366] items-center justify-center text-neutral-300 hover:text-[#25D366] transition-all duration-300 bg-black/30"
+              className="hidden sm:flex w-9 h-9 rounded-full border border-neutral-400/70 hover:border-[#25D366] items-center justify-center text-neutral-700 hover:text-[#25D366] transition-all duration-300 bg-black/5"
               aria-label="WhatsApp"
             >
               <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -151,7 +151,7 @@ export const Navbar = () => {
             {/* Shopping Cart Trigger Button */}
             <button
               onClick={toggleCart}
-              className="relative w-9 h-9 rounded-full border border-neutral-700/70 hover:border-[#d4af37] flex items-center justify-center text-neutral-300 hover:text-[#d4af37] transition-all duration-300 bg-black/30 group cursor-pointer"
+              className="relative w-9 h-9 rounded-full border border-neutral-400/70 hover:border-[#d4af37] flex items-center justify-center text-neutral-700 hover:text-[#d4af37] transition-all duration-300 bg-black/5 group cursor-pointer"
               aria-label="View Shopping Cart"
             >
               <ShoppingBag className="w-4.5 h-4.5 group-hover:scale-110 transition-transform" />
@@ -167,7 +167,7 @@ export const Navbar = () => {
           {/* Mobile Menu Toggle */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden text-neutral-300 hover:text-white transition-colors focus:outline-none"
+            className="md:hidden text-neutral-800 hover:text-neutral-900 transition-colors focus:outline-none"
             aria-label="Toggle navigation menu"
           >
             {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}

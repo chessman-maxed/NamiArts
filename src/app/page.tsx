@@ -161,56 +161,42 @@ export default function Home() {
     <>
       <Navbar />
 
-      {/* Hero Section */}
-      <section ref={heroSectionRef} className="relative w-full min-h-screen flex items-center overflow-hidden bg-[#090604] pt-24 pb-12 lg:py-0 select-none">
+      {/* Hero Section (White Background Theme) */}
+      <section ref={heroSectionRef} className="relative w-full min-h-screen flex items-center overflow-hidden bg-white pt-24 pb-12 lg:py-0 select-none border-b border-neutral-200">
         {/* Three.js Subtle Gold Particle Canvas */}
         <HeroBackground3D />
 
-        {/* Full-height Right Portrait Layer (Img 2) positioned absolutely to cover right 50-55% */}
-        <div ref={heroImageRef} className="absolute top-0 right-0 w-full lg:w-[58%] h-full z-0 overflow-hidden pointer-events-none protected-image">
-          {/* Natural Warm Golden Glow & Radial Backlight Layers */}
-          <div className="absolute top-1/4 right-1/4 w-[550px] h-[550px] bg-amber-500/25 rounded-full blur-[130px] pointer-events-none z-0" />
-          <div className="absolute top-1/3 right-1/3 w-[400px] h-[400px] bg-yellow-400/20 rounded-full blur-[100px] pointer-events-none z-0" />
-          <div className="absolute bottom-1/3 right-1/2 w-[350px] h-[350px] bg-amber-600/15 rounded-full blur-[110px] pointer-events-none z-0" />
-
-          {/* Img 2 Woman Portrait occupying top to bottom with natural cinematic lighting */}
-          <div
-            role="img"
-            aria-label="NamiArts Hero Portrait"
-            style={{
-              backgroundImage: "url('/hero-woman.png')",
-              backgroundPosition: "center 10%",
-              backgroundSize: "cover",
-            }}
-            className="w-full h-full transform filter contrast-[1.02] brightness-[1.04] saturate-[1.03]"
-          />
-
-          {/* Seamless Soft Edge Masking & Gradient Overlays */}
-          <div className="absolute inset-y-0 left-0 w-full lg:w-[68%] bg-gradient-to-r from-[#090604] via-[#090604]/75 via-45% to-transparent z-10" />
-          <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#090604] via-[#090604]/50 to-transparent z-10" />
-          <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#090604] via-[#090604]/70 to-transparent z-10" />
-          <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-[#090604]/60 to-transparent z-10" />
+        {/* Right Banner Image Layer (Cleanly fitted on white background) */}
+        <div ref={heroImageRef} className="w-full lg:w-[54%] lg:absolute lg:right-6 lg:top-1/2 lg:-translate-y-1/2 z-10 flex items-center justify-center p-4 lg:p-0 pointer-events-none protected-image">
+          <div className="relative w-full max-w-2xl rounded-2xl overflow-hidden bg-white border border-neutral-200 shadow-2xl">
+            <div className="absolute inset-0 z-20" onContextMenu={(e) => e.preventDefault()} />
+            <img
+              src="/hero-banner.jpg"
+              alt="Welcome To The World of NamiArts"
+              className="w-full h-auto object-contain pointer-events-none select-none"
+            />
+          </div>
         </div>
 
-        {/* Hero Content Container (On top of background layer) */}
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 w-full z-10 min-h-[75vh] flex items-center">
+        {/* Hero Content Container (Shifted to Left Edge) */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10 min-h-[75vh] flex items-center">
           
           {/* Left Side Content Column */}
           <div 
             ref={heroContentRef}
-            className="w-full lg:max-w-[580px] flex flex-col items-start text-left pt-6 lg:pt-0"
+            className="w-full lg:max-w-[480px] flex flex-col items-start text-left pt-6 lg:pt-0"
           >
-            <p className="font-sans text-xl sm:text-2xl font-light text-neutral-200 tracking-tight mb-1 drop-shadow-md">
+            <p className="font-sans text-xl sm:text-2xl font-semibold text-neutral-600 tracking-tight mb-1">
               Welcome to
             </p>
             
-            <h1 className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-[5.2rem] font-extrabold text-[#d4af37] tracking-tight leading-[1.05] mb-5 drop-shadow-[0_4px_20px_rgba(0,0,0,0.8)]">
-              NAMI<span className="text-[#d4af37]">ARTS</span>
+            <h1 className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-[5rem] font-extrabold text-neutral-900 tracking-tight leading-[1.05] mb-5">
+              NAMI<span className="text-[#c39e2e]">ARTS</span>
             </h1>
 
             {/* Decorative Gold Filigree Divider */}
             <div className="flex items-center gap-3 w-full max-w-md mb-6">
-              <div className="h-[1px] flex-grow bg-gradient-to-r from-[#d4af37]/90 via-[#d4af37]/40 to-transparent" />
+              <div className="h-[1.5px] flex-grow bg-gradient-to-r from-[#d4af37] via-[#d4af37]/60 to-transparent" />
               <div className="text-[#d4af37] text-sm tracking-[0.3em] font-serif select-none flex items-center justify-center">
                 <svg className="w-6 h-6 text-[#d4af37]" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 2C11.5 4 9.5 6 7 6C4.5 6 2.5 4 2 2C2.5 4 4.5 6 7 6C9.5 6 11.5 4 12 2ZM12 2C12.5 4 14.5 6 17 6C19.5 6 21.5 4 22 2C21.5 4 19.5 6 17 6C14.5 6 12.5 4 12 2ZM12 22C11.5 20 9.5 18 7 18C4.5 18 2.5 20 2 22C2.5 20 4.5 18 7 18C9.5 18 11.5 20 12 22ZM12 22C12.5 20 14.5 18 17 18C19.5 18 21.5 20 22 22C21.5 20 19.5 18 17 18C14.5 18 12.5 20 12 22Z" opacity="0.4"/>
@@ -218,26 +204,26 @@ export default function Home() {
                   <path d="M7 12c1.5-1 3.5-1 5 0M12 12c1.5 1 3.5 1 5 0" stroke="#d4af37" strokeWidth="1.5" fill="none"/>
                 </svg>
               </div>
-              <div className="h-[1px] flex-grow bg-gradient-to-l from-[#d4af37]/90 via-[#d4af37]/40 to-transparent" />
+              <div className="h-[1.5px] flex-grow bg-gradient-to-l from-[#d4af37] via-[#d4af37]/60 to-transparent" />
             </div>
 
-            <h2 className="font-display text-2xl sm:text-3xl font-semibold text-white tracking-wide mb-4 drop-shadow-md">
+            <h2 className="font-display text-2xl sm:text-3xl font-bold text-neutral-900 tracking-wide mb-4">
               Choose the Art. Choose the Frame. Make It Yours.
             </h2>
 
-            <p className="text-sm sm:text-base text-neutral-300 max-w-lg mb-3 leading-relaxed font-sans font-normal drop-shadow">
+            <p className="text-sm sm:text-base text-neutral-700 max-w-lg mb-3 leading-relaxed font-sans font-medium">
               Explore our artwork collection, choose the artwork you love, select your preferred frame type and colour, and get it crafted as a beautiful physical photo frame.
             </p>
 
-            <p className="text-xs text-[#d4af37] max-w-lg mb-8 leading-relaxed font-sans font-medium flex items-start gap-2 bg-[#d4af37]/10 border border-[#d4af37]/25 px-3.5 py-2.5 rounded-lg shadow-sm">
-              <Sparkles className="w-4 h-4 shrink-0 text-[#d4af37] mt-0.5" />
+            <p className="text-xs text-amber-900 max-w-lg mb-8 leading-relaxed font-sans font-medium flex items-start gap-2 bg-amber-50 border border-amber-200 px-3.5 py-2.5 rounded-lg shadow-sm">
+              <Sparkles className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />
               <span>Note: Custom artwork modifications can also be tailored to your specific needs upon request (additional customization charges apply).</span>
             </p>
 
             <div className="flex flex-wrap items-center gap-4 w-full sm:w-auto">
               <a
                 href="#collections"
-                className="w-full sm:w-auto px-8 py-4 rounded-lg bg-[#d4af37] hover:bg-[#c39e2e] text-black font-bold text-sm tracking-wide shadow-[0_4px_25px_rgba(212,175,55,0.35)] transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-8 py-4 rounded-lg bg-[#d4af37] hover:bg-[#b89528] text-black font-bold text-sm tracking-wide shadow-lg shadow-[#d4af37]/25 transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
               >
                 Choose Artwork & Frame
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -246,7 +232,7 @@ export default function Home() {
               </a>
               <Link
                 href="/stories"
-                className="w-full sm:w-auto px-8 py-4 rounded-lg bg-black/60 hover:bg-neutral-900 text-white font-semibold text-sm tracking-wide border border-neutral-700/80 hover:border-[#d4af37]/60 transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center gap-2 backdrop-blur-md"
+                className="w-full sm:w-auto px-8 py-4 rounded-lg bg-neutral-900 hover:bg-black text-white font-semibold text-sm tracking-wide transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center gap-2 shadow-md"
               >
                 Read Free Stories
                 <BookOpen className="w-4 h-4 text-[#d4af37]" />
@@ -256,6 +242,31 @@ export default function Home() {
 
         </div>
       </section>
+
+      {/* Infinite Moving Disclaimer Marquee */}
+      <div className="relative flex overflow-x-hidden w-full py-3 bg-[#0a0a0a] border-y border-neutral-900 select-none z-20 shadow-[0_0_30px_rgba(214,175,55,0.02)]">
+        <div className="animate-marquee-rtl flex whitespace-nowrap shrink-0 gap-10 text-neutral-400 text-[10px] md:text-xs font-bold uppercase tracking-widest">
+          <span className="text-[#d4af37] px-2 py-0.5 rounded bg-[#d4af37]/10 text-[9px] font-extrabold self-center">Disclaimer</span>
+          <span>If our art matches with someone else’s . then consider this as purely coincidental and unintentional as we don’t want to hurt sentiments of any person or community or any religion.</span>
+          <span className="text-[#d4af37] self-center">✦</span>
+          <span className="text-[#d4af37] px-2 py-0.5 rounded bg-[#d4af37]/10 text-[9px] font-extrabold self-center">Disclaimer</span>
+          <span>If our art matches with someone else’s . then consider this as purely coincidental and unintentional as we don’t want to hurt sentiments of any person or community or any religion.</span>
+          <span className="text-[#d4af37] self-center">✦</span>
+        </div>
+        <div className="animate-marquee-rtl flex whitespace-nowrap shrink-0 gap-10 text-neutral-400 text-[10px] md:text-xs font-bold uppercase tracking-widest" aria-hidden="true">
+          <span className="text-[#d4af37] px-2 py-0.5 rounded bg-[#d4af37]/10 text-[9px] font-extrabold self-center">Disclaimer</span>
+          <span>If our art matches with someone else’s . then consider this as purely coincidental and unintentional as we don’t want to hurt sentiments of any person or community or any religion.</span>
+          <span className="text-[#d4af37] self-center">✦</span>
+          <span className="text-[#d4af37] px-2 py-0.5 rounded bg-[#d4af37]/10 text-[9px] font-extrabold self-center">Disclaimer</span>
+          <span>If our art matches with someone else’s . then consider this as purely coincidental and unintentional as we don’t want to hurt sentiments of any person or community or any religion.</span>
+          <span className="text-[#d4af37] self-center">✦</span>
+        </div>
+      </div>
+
+      {/* Explore Our Art Collections Section */}
+      <AnimatedSection direction="up">
+        <ArtCollectionsSection artworks={artworks} />
+      </AnimatedSection>
 
       {/* Customer Journey 3-Step Process Section */}
       <section className="py-12 md:py-16 bg-[#0c0906] border-t border-neutral-900 select-none">
@@ -296,66 +307,60 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Infinite Moving Disclaimer Marquee */}
-      <div className="relative flex overflow-x-hidden w-full py-3 bg-[#0a0a0a] border-y border-neutral-900 select-none z-20 shadow-[0_0_30px_rgba(214,175,55,0.02)]">
-        <div className="animate-marquee-rtl flex whitespace-nowrap shrink-0 gap-10 text-neutral-400 text-[10px] md:text-xs font-bold uppercase tracking-widest">
-          <span className="text-[#d4af37] px-2 py-0.5 rounded bg-[#d4af37]/10 text-[9px] font-extrabold self-center">Disclaimer</span>
-          <span>If our art matches with someone else’s . then consider this as purely coincidental and unintentional as we don’t want to hurt sentiments of any person or community or any religion.</span>
-          <span className="text-[#d4af37] self-center">✦</span>
-          <span className="text-[#d4af37] px-2 py-0.5 rounded bg-[#d4af37]/10 text-[9px] font-extrabold self-center">Disclaimer</span>
-          <span>If our art matches with someone else’s . then consider this as purely coincidental and unintentional as we don’t want to hurt sentiments of any person or community or any religion.</span>
-          <span className="text-[#d4af37] self-center">✦</span>
-        </div>
-        <div className="animate-marquee-rtl flex whitespace-nowrap shrink-0 gap-10 text-neutral-400 text-[10px] md:text-xs font-bold uppercase tracking-widest" aria-hidden="true">
-          <span className="text-[#d4af37] px-2 py-0.5 rounded bg-[#d4af37]/10 text-[9px] font-extrabold self-center">Disclaimer</span>
-          <span>If our art matches with someone else’s . then consider this as purely coincidental and unintentional as we don’t want to hurt sentiments of any person or community or any religion.</span>
-          <span className="text-[#d4af37] self-center">✦</span>
-          <span className="text-[#d4af37] px-2 py-0.5 rounded bg-[#d4af37]/10 text-[9px] font-extrabold self-center">Disclaimer</span>
-          <span>If our art matches with someone else’s . then consider this as purely coincidental and unintentional as we don’t want to hurt sentiments of any person or community or any religion.</span>
-          <span className="text-[#d4af37] self-center">✦</span>
-        </div>
-      </div>
-
-      {/* Explore Our Art Collections Section */}
-      <AnimatedSection direction="up">
-        <ArtCollectionsSection artworks={artworks} />
-      </AnimatedSection>
-
       {/* About Section with Scroll Animations */}
-      <section ref={aboutSectionRef} id="about" className="py-16 md:py-24 border-t border-neutral-900 bg-neutral-950/20 relative">
-        <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10 md:gap-16 items-center">
-          {/* Visual container (Left side) */}
-          <AnimatedSection direction="right" delay={0.1}>
-            <div className="relative aspect-[9/16] w-full max-w-[360px] lg:max-w-[400px] mx-auto rounded-2xl overflow-hidden bg-neutral-900 border border-neutral-800/80 flex items-center justify-center group select-none protected-image">
-              <div className="absolute inset-0 z-20" onContextMenu={(e) => e.preventDefault()} />
-              <div className="absolute inset-0 ambient-glow z-10 pointer-events-none" />
-              
-              <div
-                ref={aboutImageRef}
-                role="img"
-                aria-label="NamiArts Studio"
-                style={{ backgroundImage: "url('/about_art.jpg')" }}
-                className="h-full w-full bg-cover bg-bottom transition-transform duration-750 ease-out group-hover:scale-105 pointer-events-none select-none z-0"
-              />
-              <div className="absolute inset-0 border border-amber-500/10 group-hover:border-amber-500/20 transition-colors duration-500 rounded-2xl z-30" />
-            </div>
-          </AnimatedSection>
+      <section ref={aboutSectionRef} id="about" className="py-16 md:py-24 border-t border-neutral-900 bg-neutral-950/20 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+          {/* Visual container (Left side - 2 Portrait Images) */}
+          <div className="lg:col-span-7 grid grid-cols-2 gap-4 md:gap-6 items-center">
+            {/* Hero Girl portrait image (Left) */}
+            <AnimatedSection direction="right" delay={0.1}>
+              <div className="relative aspect-[9/16] w-full mx-auto rounded-2xl overflow-hidden bg-neutral-900 border border-neutral-800/80 flex items-center justify-center group select-none protected-image shadow-xl shadow-black/50">
+                <div className="absolute inset-0 z-20" onContextMenu={(e) => e.preventDefault()} />
+                <div className="absolute inset-0 ambient-glow z-10 pointer-events-none" />
+                <div
+                  role="img"
+                  aria-label="NamiArts Featured Portrait"
+                  style={{ backgroundImage: "url('/hero-woman.png')", backgroundPosition: "center 15%" }}
+                  className="h-full w-full bg-cover transition-transform duration-750 ease-out group-hover:scale-105 pointer-events-none select-none z-0"
+                />
+                <div className="absolute inset-0 border border-amber-500/10 group-hover:border-amber-500/20 transition-colors duration-500 rounded-2xl z-30" />
+              </div>
+            </AnimatedSection>
 
-          {/* About description (Right side) */}
-          <AnimatedSection direction="left" delay={0.25}>
-            <div className="flex flex-col">
-              <span className="text-xs uppercase tracking-widest text-[#d4af37] font-bold mb-3">The Studio</span>
-              <h2 className="font-display text-3xl md:text-4xl font-bold text-white tracking-wide mb-6">
-                About NamiArts
-              </h2>
-              <p className="text-neutral-400 leading-relaxed font-sans mb-6">
-                NamiArts is a premium artwork and custom photo frame brand. We design original visual masterworks and craft them into high-quality physical photo frames tailored for collectors, homeowners, and art enthusiasts.
-              </p>
-              <p className="text-neutral-400 leading-relaxed font-sans mb-0">
-                Every artwork is created originally by us and rendered with ultra-high resolution precision. Choose your preferred frame style and colour, and we will craft a physical photo frame to elevate your space.
-              </p>
-            </div>
-          </AnimatedSection>
+            {/* Existing portrait image (Right of left image) */}
+            <AnimatedSection direction="right" delay={0.2}>
+              <div className="relative aspect-[9/16] w-full mx-auto rounded-2xl overflow-hidden bg-neutral-900 border border-neutral-800/80 flex items-center justify-center group select-none protected-image shadow-xl shadow-black/50">
+                <div className="absolute inset-0 z-20" onContextMenu={(e) => e.preventDefault()} />
+                <div className="absolute inset-0 ambient-glow z-10 pointer-events-none" />
+                <div
+                  ref={aboutImageRef}
+                  role="img"
+                  aria-label="NamiArts Studio"
+                  style={{ backgroundImage: "url('/about_art.jpg')" }}
+                  className="h-full w-full bg-cover bg-bottom transition-transform duration-750 ease-out group-hover:scale-105 pointer-events-none select-none z-0"
+                />
+                <div className="absolute inset-0 border border-amber-500/10 group-hover:border-amber-500/20 transition-colors duration-500 rounded-2xl z-30" />
+              </div>
+            </AnimatedSection>
+          </div>
+
+          {/* About description (Shifted to Right Side) */}
+          <div className="lg:col-span-5 lg:pl-6">
+            <AnimatedSection direction="left" delay={0.3}>
+              <div className="flex flex-col">
+                <span className="text-xs uppercase tracking-widest text-[#d4af37] font-bold mb-3">The Studio</span>
+                <h2 className="font-display text-3xl md:text-4xl font-bold text-white tracking-wide mb-6">
+                  About NamiArts
+                </h2>
+                <p className="text-neutral-400 leading-relaxed font-sans mb-6">
+                  NamiArts is a premium artwork and custom photo frame brand. We design original visual masterworks and craft them into high-quality physical photo frames tailored for collectors, homeowners, and art enthusiasts.
+                </p>
+                <p className="text-neutral-400 leading-relaxed font-sans mb-0">
+                  Every artwork is created originally by us and rendered with ultra-high resolution precision. Choose your preferred frame style and colour, and we will craft a physical photo frame to elevate your space.
+                </p>
+              </div>
+            </AnimatedSection>
+          </div>
         </div>
       </section>
 

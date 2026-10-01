@@ -1183,7 +1183,7 @@ export default function AdminDashboard() {
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         placeholder="Enter artwork number (e.g. #001)"
-                        className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#d4af37] transition-colors"
+                        className="w-full bg-neutral-900 border border-[#d4af37] ring-1 ring-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.3)] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none transition-all duration-300"
                       />
                     </div>
 
@@ -1196,7 +1196,7 @@ export default function AdminDashboard() {
                       <select
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
-                        className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#d4af37] transition-colors cursor-pointer"
+                        className="w-full bg-neutral-900 border border-[#d4af37] ring-1 ring-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.3)] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none transition-all duration-300 cursor-pointer"
                       >
                         {CATEGORY_OPTIONS.map((opt) => (
                           <option key={opt.value} value={opt.value}>
@@ -1214,7 +1214,7 @@ export default function AdminDashboard() {
                       <select
                         value={orientation}
                         onChange={(e) => setOrientation(e.target.value as "portrait" | "landscape")}
-                        className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#d4af37] transition-colors cursor-pointer"
+                        className="w-full bg-neutral-900 border border-[#d4af37] ring-1 ring-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.3)] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none transition-all duration-300 cursor-pointer"
                       >
                         {ORIENTATION_OPTIONS.map((opt) => (
                           <option key={opt.value} value={opt.value}>
@@ -1231,7 +1231,7 @@ export default function AdminDashboard() {
                       <label className="block text-xs uppercase tracking-wider text-neutral-400 font-bold mb-2">
                         Image File *
                       </label>
-                      <div className="relative border border-dashed border-neutral-800 hover:border-neutral-700 bg-neutral-950 rounded-lg p-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors group">
+                      <div className="relative border border-dashed border-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.3)] bg-neutral-950 rounded-lg p-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all duration-300 group">
                         <input
                           id="artwork-file-input"
                           type="file"
@@ -1302,7 +1302,7 @@ export default function AdminDashboard() {
                         value={storyTitle}
                         onChange={(e) => setStoryTitle(e.target.value)}
                         placeholder="Enter story title"
-                        className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#d4af37] transition-colors"
+                        className="w-full bg-neutral-900 border border-[#d4af37] ring-1 ring-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.3)] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none transition-all duration-300"
                       />
                     </div>
 
@@ -1311,7 +1311,7 @@ export default function AdminDashboard() {
                       <label className="block text-xs uppercase tracking-wider text-neutral-400 font-bold mb-2">
                         Story Cover Images *
                       </label>
-                      <div className="relative border border-dashed border-neutral-800 hover:border-neutral-700 bg-neutral-950 rounded-lg p-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors group">
+                      <div className="relative border border-dashed border-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.3)] bg-neutral-950 rounded-lg p-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all duration-300 group">
                         <input
                           id="story-panel-file-input"
                           type="file"
@@ -1402,7 +1402,7 @@ export default function AdminDashboard() {
                         value={schemeBadge}
                         onChange={(e) => setSchemeBadge(e.target.value)}
                         placeholder="e.g. Limited Time, Popular Deal, Customization Bonus"
-                        className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-4 py-2 text-xs text-white focus:outline-none focus:border-[#d4af37]"
+                        className="w-full bg-neutral-900 border border-[#d4af37] ring-1 ring-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.3)] rounded-lg px-4 py-2 text-xs text-white focus:outline-none transition-all duration-300"
                       />
                     </div>
 
@@ -1417,7 +1417,7 @@ export default function AdminDashboard() {
                         value={schemeTitle}
                         onChange={(e) => setSchemeTitle(e.target.value)}
                         placeholder="e.g. 20% OFF — Selected Photo Frames"
-                        className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-4 py-2 text-xs text-white focus:outline-none focus:border-[#d4af37]"
+                        className="w-full bg-neutral-900 border border-[#d4af37] ring-1 ring-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.3)] rounded-lg px-4 py-2 text-xs text-white focus:outline-none transition-all duration-300"
                       />
                     </div>
 
@@ -1432,7 +1432,7 @@ export default function AdminDashboard() {
                         value={schemeDiscount}
                         onChange={(e) => setSchemeDiscount(e.target.value)}
                         placeholder="e.g. 20% OFF, BUY 2 GET 1"
-                        className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-4 py-2 text-xs text-white focus:outline-none focus:border-[#d4af37]"
+                        className="w-full bg-neutral-900 border border-[#d4af37] ring-1 ring-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.3)] rounded-lg px-4 py-2 text-xs text-white focus:outline-none transition-all duration-300"
                       />
                     </div>
 
@@ -1447,7 +1447,7 @@ export default function AdminDashboard() {
                         value={schemeDescription}
                         onChange={(e) => setSchemeDescription(e.target.value)}
                         placeholder="Describe the scheme offer details..."
-                        className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-4 py-2 text-xs text-white focus:outline-none focus:border-[#d4af37] resize-none"
+                        className="w-full bg-neutral-900 border border-[#d4af37] ring-1 ring-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.3)] rounded-lg px-4 py-2 text-xs text-white focus:outline-none transition-all duration-300 resize-none"
                       />
                     </div>
 
@@ -1462,7 +1462,7 @@ export default function AdminDashboard() {
                           value={schemeValidity}
                           onChange={(e) => setSchemeValidity(e.target.value)}
                           placeholder="e.g. Valid for 7 Days"
-                          className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#d4af37]"
+                          className="w-full bg-neutral-900 border border-[#d4af37] ring-1 ring-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.3)] rounded-lg px-3 py-2 text-xs text-white focus:outline-none transition-all duration-300"
                         />
                       </div>
                       <div>
@@ -1476,7 +1476,7 @@ export default function AdminDashboard() {
                           value={schemeDurationDays}
                           onChange={(e) => setSchemeDurationDays(e.target.value)}
                           placeholder="e.g. 7 (days)"
-                          className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#d4af37]"
+                          className="w-full bg-neutral-900 border border-[#d4af37] ring-1 ring-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.3)] rounded-lg px-3 py-2 text-xs text-white focus:outline-none transition-all duration-300"
                         />
                       </div>
                     </div>
@@ -1492,7 +1492,7 @@ export default function AdminDashboard() {
                           value={schemeCtaText}
                           onChange={(e) => setSchemeCtaText(e.target.value)}
                           placeholder="Explore →"
-                          className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#d4af37]"
+                          className="w-full bg-neutral-900 border border-[#d4af37] ring-1 ring-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.3)] rounded-lg px-3 py-2 text-xs text-white focus:outline-none transition-all duration-300"
                         />
                       </div>
                       <div>
@@ -1504,7 +1504,7 @@ export default function AdminDashboard() {
                           value={schemeCtaLink}
                           onChange={(e) => setSchemeCtaLink(e.target.value)}
                           placeholder="/#collections"
-                          className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#d4af37]"
+                          className="w-full bg-neutral-900 border border-[#d4af37] ring-1 ring-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.3)] rounded-lg px-3 py-2 text-xs text-white focus:outline-none transition-all duration-300"
                         />
                       </div>
                     </div>
