@@ -215,12 +215,12 @@ export default function Home() {
               Explore our artwork collection, choose the artwork you love, select your preferred frame type and colour, and get it crafted as a beautiful physical photo frame.
             </p>
 
-            <p className="text-sm sm:text-base text-amber-900 max-w-lg mb-4 leading-relaxed font-sans font-medium flex items-start gap-2 bg-amber-50 border border-amber-200 px-3.5 py-2.5 rounded-lg shadow-sm">
+            <p className="text-sm sm:text-base text-amber-900 max-w-lg mb-4 leading-relaxed font-sans font-medium flex items-start gap-2 bg-amber-50 border border-amber-200 px-3.5 py-2.5 rounded-lg shadow-sm animate-scheme-glow hover:shadow-[0_0_25px_rgba(212,175,55,0.6)] transition-all">
               <Sparkles className="w-5 h-5 shrink-0 text-amber-600 mt-0.5" />
               <span>Note: Custom artwork modifications can also be tailored to your specific needs upon request (additional customization charges apply).</span>
             </p>
 
-            <p className="text-sm sm:text-base text-amber-900 max-w-lg mb-8 leading-relaxed font-sans font-medium flex items-start gap-2 bg-amber-50 border border-amber-200 px-3.5 py-2.5 rounded-lg shadow-sm">
+            <p className="text-sm sm:text-base text-amber-900 max-w-lg mb-8 leading-relaxed font-sans font-medium flex items-start gap-2 bg-amber-50 border border-amber-200 px-3.5 py-2.5 rounded-lg shadow-sm animate-scheme-glow hover:shadow-[0_0_25px_rgba(212,175,55,0.6)] transition-all">
               <Sparkles className="w-5 h-5 shrink-0 text-amber-600 mt-0.5" />
               <span>Note: We can make our artwork in 20 + artwork styles on customer demand (Subject to approvel by namiarts)</span>
             </p>
