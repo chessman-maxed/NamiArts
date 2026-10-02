@@ -215,29 +215,15 @@ export default function Home() {
               Explore our artwork collection, choose the artwork you love, select your preferred frame type and colour, and get it crafted as a beautiful physical photo frame.
             </p>
 
-            <p className="text-xs text-amber-900 max-w-lg mb-8 leading-relaxed font-sans font-medium flex items-start gap-2 bg-amber-50 border border-amber-200 px-3.5 py-2.5 rounded-lg shadow-sm">
-              <Sparkles className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />
+            <p className="text-sm sm:text-base text-amber-900 max-w-lg mb-4 leading-relaxed font-sans font-medium flex items-start gap-2 bg-amber-50 border border-amber-200 px-3.5 py-2.5 rounded-lg shadow-sm">
+              <Sparkles className="w-5 h-5 shrink-0 text-amber-600 mt-0.5" />
               <span>Note: Custom artwork modifications can also be tailored to your specific needs upon request (additional customization charges apply).</span>
             </p>
 
-            <div className="flex flex-wrap items-center gap-4 w-full sm:w-auto">
-              <a
-                href="#collections"
-                className="w-full sm:w-auto px-8 py-4 rounded-lg bg-[#d4af37] hover:bg-[#b89528] text-black font-bold text-sm tracking-wide shadow-lg shadow-[#d4af37]/25 transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
-              >
-                Choose Artwork & Frame
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-              </a>
-              <Link
-                href="/stories"
-                className="w-full sm:w-auto px-8 py-4 rounded-lg bg-neutral-900 hover:bg-black text-white font-semibold text-sm tracking-wide transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center gap-2 shadow-md"
-              >
-                Read Free Stories
-                <BookOpen className="w-4 h-4 text-[#d4af37]" />
-              </Link>
-            </div>
+            <p className="text-sm sm:text-base text-amber-900 max-w-lg mb-8 leading-relaxed font-sans font-medium flex items-start gap-2 bg-amber-50 border border-amber-200 px-3.5 py-2.5 rounded-lg shadow-sm">
+              <Sparkles className="w-5 h-5 shrink-0 text-amber-600 mt-0.5" />
+              <span>Note: We can make our artwork in 20 + artwork styles on customer demand (Subject to approvel by namiarts)</span>
+            </p>
           </div>
 
         </div>
